@@ -6,7 +6,7 @@ int main(void)
 {
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Sunshine");
     SetTargetFPS(60);
-
+    // Testing Lab 1 Change. This is the main code and it renders "Hello World!" while game application is still running
     while (!WindowShouldClose())
     {
         BeginDrawing();
