@@ -42,9 +42,10 @@ int main(void)
     Vector2 mouseCircle = { (float)SCREEN_WIDTH / 2, 200 }; // Create a circular ball, controlled by mouse, which can be moved around by the player
     Rectangle starionaryRectangle = { 50, 300, 100, 100 }; // Create a Stationary Rectangle
     Vector2 firstTriangleLine = { 100,600 }, secondTriangleLine = { 200,600 }, thirdTriangleLine = { 100,500 }; // Create Triangle Points
-
+    // Contra Splash Background Kindly Yoinked for Free from https://steemit.com/gaming/@jameslashomb/classic-game-reviews-contra-the-original-run-and-gun-shooter
+    // Combined with a still of the scrolling game background in Paint 3D
     Texture2D titleScreen = LoadTexture("../game/assets/textures/TitleScreen.png"); // Load Texture from File
-
+    // Obstacles Kindly Yoinked for Free from https://opengameart.org/content/2d-obstacle-collection
     Image original = LoadImage("../game/assets/textures/obstacles.png"); // Create an Image from File
     Texture2D imageTexture = LoadTextureFromImage(original); // Convert the loaded image to a texture
 
