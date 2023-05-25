@@ -229,6 +229,7 @@ int main(void)
     }
 
     UnloadTexture(imageTexture); // Unload the image texture
+    UnloadTexture(titleScreen); // Unload the image texture
 	UnloadSound(villainLaugh); // Unload Sound Effect
     UnloadMusicStream(mainTheme); // Unload Music Track
     CloseAudioDevice(); // Close Audio
