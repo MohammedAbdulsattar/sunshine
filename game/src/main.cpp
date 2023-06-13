@@ -5,7 +5,6 @@
 //#include "Math.h"
 #include <vector>
 
-
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
 
@@ -123,6 +122,18 @@ int main(void)
     rlImGuiSetup(true); // Setup GUI Init
     bool useGUI = false; // bool check to see if GUI is being used
 
+    Agent agent; // agent object
+    agent.rigidBody.position = { 0, 0 }; // agent starting position
+    agent.rigidBody.velocity = { 0,0 }; // agent starting velocity
+    // Image Source Download Page: https://pngtree.com/freepng/blue-bird-flying-bird-cartoon-blue_3926050.html
+    agent.sprite = LoadTexture("../game/assets/textures/agent_sprite.png"); // agent sprite
+    agent.maxSpeed = 300.0f; // agent starting speed
+    agent.maxAcceleration = 300.0f; // agent starting acceleration
+
+    Vector2 targetPosition; // Create a vector that will be used as the XY position of the Target
+    bool isMouseButtonLeft = false; // keep track of the left mouse button being pressed/held
+    bool isMouseButtonRight = false; // keep track of the right mouse button being pressed/held
+
     float rotationAngle = 0.0f; // rotation for blue agent circle
     float maxSpeed = 300.0f;
     
@@ -134,19 +145,12 @@ int main(void)
 
         float deltaTime = GetFrameTime(); // Get time in seconds for last frame drawn (delta time)
 
-        //Vector2 a = { 100,100 };
-    	//Vector2 b = { 300,300 };
-        //Vector2 c = {200,200};
-
-        //Project(a, b);
-        //Vector2 result = NearestPoint(a, b, c);
-
         Vector2 agentPosition = { SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 }; // Agent starting position set to half the screen width and height
-        Vector2 agentVelocity = { 5.0f, 5.0f }; // velocity for the agent to work with
+        //Vector2 agentVelocity = { 5.0f, 5.0f }; // velocity for the agent to work with
         Vector2 mousePosition = GetMousePosition(); // get mouse position vector based on XY coordinates in screen
         Vector2 obstaclePosition = {200, 200}; // get mouse position vector based on XY coordinates in screen
 
-        Vector2 direction = Vector2Subtract(obstaclePosition, agentPosition); // Create a direction vector from the agent position to the obstacle position -> result = { v1.x - v2.x, v1.y - v2.y };
+        Vector2 direction = Vector2Subtract(mousePosition, agent.rigidBody.position); // Create a direction vector from the agent position to the obstacle position -> result = { v1.x - v2.x, v1.y - v2.y };
 
         DrawCircleV(obstaclePosition, 10, { 255,0,255,128 }); // Draw a transparent circle to represent the mouse obstacle target
         DrawCircleV(mousePosition, 10, { 255,0,255,128 }); // Draw a transparent circle to represent the mouse obstacle target
@@ -154,11 +158,11 @@ int main(void)
         float lineLength = 100.0f; // Length of the whisker line
 
         // Create a vector endpoint which represents the agent position as a scaled normalized direction opposite from the mouse target with a set length
-        Vector2 endPoint = Vector2Subtract(agentPosition, Vector2Scale(Vector2Normalize(direction), lineLength)); // Mathematical formula -> result = { v1.x - v2.x, v1.y - v2.y }; result = { v.x*scale, v.y*scale };
+        Vector2 endPoint = Vector2Subtract(agent.rigidBody.position, Vector2Scale(Vector2Normalize(direction), lineLength)); // Mathematical formula -> result = { v1.x - v2.x, v1.y - v2.y }; result = { v.x*scale, v.y*scale };
 
-        DrawLineEx(agentPosition, endPoint, 1.5f,RED); // Draw the endPoint whisker line from the agent position away from the mouse target
+        DrawLineEx(agent.rigidBody.position, endPoint, 1.5f,RED); // Draw the endPoint whisker line from the agent position away from the mouse target
 
-        //DrawCircleV(agentPosition, 10, BLUE); // Draw the circle representing the agent
+        //DrawCircleV(agent.rigidBody.position, 10, BLUE); // Draw the circle representing the agent
 
         float whiskerAngle = 270.0f; // Angle of the whiskers in float degrees
 
@@ -170,82 +174,100 @@ int main(void)
         Vector2 rightWhiskerDirection = Vector2Rotate(direction, whiskerAngle); // clockwise rotation -> result.x = v.x*cosres - v.y*sinres; result.y = v.x*sinres + v.y*cosres;
         Vector2 leftWhiskerDirection = Vector2Rotate(direction, -whiskerAngle); // counter-clockwise rotation -> result.x = v.x*(-cosres) - v.y*(-sinres); result.y = v.x*(-sinres) + v.y*(-cosres);
 
-        // create a rightWhiskerEnd vector starting from the agentPosition and extending in the Scaled Normalized rightWhiskerDirection according to the lineLength
-        Vector2 rightWhiskerEnd = Vector2Add(agentPosition, Vector2Scale(Vector2Normalize(rightWhiskerDirection), lineLength)); // Mathematical understanding -> agentposition + (Scale Normalize (rightWhiskerDirection * LineLength)
-        // create a leftWhiskerEnd vector starting from the agentPosition and extending in the Scaled Normalized leftWhiskerDirection according to the lineLength
-        Vector2 leftWhiskerEnd = Vector2Add(agentPosition, Vector2Scale(Vector2Normalize(leftWhiskerDirection), lineLength)); // Mathematical understanding -> agentposition + (Scale Normalize (leftWhiskerDirection * LineLength)
+        // create a rightWhiskerEnd vector starting from the agent.rigidBody.position and extending in the Scaled Normalized rightWhiskerDirection according to the lineLength
+        Vector2 rightWhiskerEnd = Vector2Add(agent.rigidBody.position, Vector2Scale(Vector2Normalize(rightWhiskerDirection), lineLength)); // Mathematical understanding -> agent.rigidBody.position + (Scale Normalize (rightWhiskerDirection * LineLength)
+        // create a leftWhiskerEnd vector starting from the agent.rigidBody.position and extending in the Scaled Normalized leftWhiskerDirection according to the lineLength
+        Vector2 leftWhiskerEnd = Vector2Add(agent.rigidBody.position, Vector2Scale(Vector2Normalize(leftWhiskerDirection), lineLength)); // Mathematical understanding -> agent.rigidBody.position + (Scale Normalize (leftWhiskerDirection * LineLength)
 
-        DrawLineEx(agentPosition, rightWhiskerEnd, 1.5f, BLUE);  // Draw the right whisker line vector
+        DrawLineEx(agent.rigidBody.position, rightWhiskerEnd, 1.5f, BLUE);  // Draw the right whisker line vector
 
-        DrawLineEx(agentPosition, leftWhiskerEnd, 1.5f, BLUE); // Draw the left whisker line vector
-
-        //Vector2 circleCenter = obstaclePosition; // stationary obstacle vector
-        //float circleRadius = 10.0f; // stationary obstacle radius
-
-        //float distanceRight = PointToLineDistance(circleCenter, agentPosition, rightWhiskerEnd);
-        //float distanceLeft = PointToLineDistance(circleCenter, agentPosition, leftWhiskerEnd);
-        //bool RightLineCircleCollision = (distanceRight <= circleRadius);
-        //bool leftLineCircleCollision = (distanceLeft <= circleRadius);
+        DrawLineEx(agent.rigidBody.position, leftWhiskerEnd, 1.5f, BLUE); // Draw the left whisker line vector
 
         Vector2 mouseCenter = mousePosition; // mouse obstacle vector
         float mouseRadius = 10.0f; // mouse obstacle radius
 
-        float mouseRight = PointToLineDistance(mouseCenter, agentPosition, rightWhiskerEnd);
-        float mouseLeft = PointToLineDistance(mouseCenter, agentPosition, leftWhiskerEnd);
+        float mouseRight = PointToLineDistance(mouseCenter, agent.rigidBody.position, rightWhiskerEnd);
+        float mouseLeft = PointToLineDistance(mouseCenter, agent.rigidBody.position, leftWhiskerEnd);
         bool rightMouseLineCircleCollision = (mouseRight <= mouseRadius);
         bool LeftMouseLineCircleCollision = (mouseLeft <= mouseRadius);
 
         // Lab 3 - Part 2
-        //Vector2 nearestPoint = Vector2Add(agentPosition, Vector2Scale(Vector2Normalize(direction), lineLength));
+        //Vector2 nearestPoint = Vector2Add(agent.rigidBody.position, Vector2Scale(Vector2Normalize(direction), lineLength));
         //float distance = Vector2Distance(nearestPoint, circleCenter);
         //bool lineCircleCollision = (distance < circleRadius);
-
-        agentPosition.x += agentVelocity.x * deltaTime;
-        agentPosition.y += agentVelocity.y * deltaTime;
 
         float cosAngle = cosf(rotationAngle * DEG2RAD); // Calculate cosine of the angle
         float sinAngle = sinf(rotationAngle * DEG2RAD); // Calculate sine of the angle
 
-        DrawCircle(agentPosition.x, agentPosition.y, 10, BLUE);
-        //DrawCircle(agentPosition.x + 20.0f * cosAngle, agentPosition.y + 20.0f * sinAngle, 10, BLUE);
+        DrawCircle(agent.rigidBody.position.x, agent.rigidBody.position.y, 10, BLUE);
+        //DrawCircle(agent.rigidBody.position.x + 20.0f * cosAngle, agent.rigidBody.position.y + 20.0f * sinAngle, 10, BLUE);
 
-        //if (RightLineCircleCollision)
-        //{
-        //    DrawCircleV(circleCenter, 10, GREEN); // collision color swap for target
-        //    DrawCircleV(agentPosition,10, GREEN); // collision color swap for agent
-        //    rotationAngle += 1.0f; // Rotate clockwise
-        //    DrawCircle(agentPosition.x + 20.0f * cosAngle, agentPosition.y + 20.0f * sinAngle, 10, BLUE);
-        //	std::cout << "Line-Circle Collision!" << std::endl;
-        //}
+        targetPosition = GetMousePosition(); // use mouse position for the target XY position
 
-        //if (leftLineCircleCollision)
-        //{
-        //    DrawCircleV(circleCenter, 10, GREEN); // collision color swap for target
-        //    DrawCircleV(agentPosition, 10, GREEN); // collision color swap for agent
-        //    rotationAngle += 1.0f; // Rotate clockwise
-        //    DrawCircle(agentPosition.x - 20.0f * cosAngle, agentPosition.y - 20.0f * sinAngle, 10, BLUE);
-        //    std::cout << "Line-Circle Collision!" << std::endl;
-        //}
+        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) // if left mouse button is being held
+        {
+            isMouseButtonLeft = true;
+            DrawCircleV(targetPosition, 10, { 255,0,255,128 }); // Draw a transparent circle to represent the mouse target
+        }
+        else
+        {
+            isMouseButtonLeft = false;
+        }
+
+        if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) // if right mouse button is being held
+        {
+            isMouseButtonRight = true;
+            DrawCircleV(targetPosition, 10, { 255,0,255,128 }); // Draw a transparent circle to represent the mouse target
+        }
+        else
+        {
+            isMouseButtonRight = false;
+        }
+
+        if (isMouseButtonLeft)
+        {
+            agent.seekUpdate(deltaTime, targetPosition); // Call Seek function for left mouse button being held
+            agent.wraparound(); // make sure the objects wrap around to the other side instead of disappear off-screen
+        }
+        if (isMouseButtonRight)
+        {
+            agent.fleeUpdate(deltaTime, targetPosition); // Call Flee function for right mouse button being held
+            agent.wraparound(); // make sure the objects wrap around to the other side instead of disappear off-screen
+        }
+
+        DrawTexture(agent.sprite, agent.rigidBody.position.x, agent.rigidBody.position.y, WHITE); // Render the agent sprite at its current XY position
+
+        Vector2 agentVelocity = Vector2Normalize(agent.rigidBody.velocity); // Create a Normalized vector based on the velocity for the Agent
+        DrawLineEx(agent.rigidBody.position, Vector2Add(agent.rigidBody.position, Vector2Scale(agentVelocity, 30)), 2, GREEN); // Draw a vector line displaying velocity magnitude and direction towards target
+
+        Vector2 agentAcceleration = { agent.maxAcceleration, agent.maxAcceleration }; // Create a vector attached to the current XY for the Agent
+        DrawLineEx(agent.rigidBody.position, Vector2Add(agent.rigidBody.position, Vector2Scale(agentAcceleration, 0.1f)), 2, { 0,0,255,255 }); // Draw a vector line for the acceleration magnitude of the Agent
+
+        Vector2 toTarget = Vector2Normalize(Vector2Subtract(targetPosition, agent.rigidBody.position)); // Normalized Vector that keeps track of the targetPosition with respect to Agent position according to sqrt((v.x*v.x) + (v.y*v.y))
+        DrawLineEx(agent.rigidBody.position, Vector2Add(agent.rigidBody.position, Vector2Scale(toTarget, 30)), 2, RED); // Draw a vector line displaying the direction towards target from agent
+
+        Vector2 displacement = Vector2Scale(agent.rigidBody.velocity, deltaTime); // update displacement of object due to accelerated velocity -> displacement = velocity * deltatime 
+        float distance = Vector2Distance(agent.rigidBody.position, targetPosition); // calculate the distance from agent to target (mouse) according to formula -> sqrt((v1.x - v2.x)*(v1.x - v2.x) + (v1.y - v2.y)*(v1.y - v2.y));
 
         if (rightMouseLineCircleCollision) // turn to the left
         {
             DrawCircleV(mouseCenter, 10, GREEN); // collision color swap for target
-            DrawCircleV(agentPosition, 10, GREEN); // collision color swap for agent
+            DrawCircleV(agent.rigidBody.position, 10, GREEN); // collision color swap for agent
             rotationAngle -= 1.0f; // Rotate counter-clockwise
             agentVelocity.x = sinAngle;
             agentVelocity.y = cosAngle;
-            DrawCircle(agentPosition.x + 20.0f * sinAngle, agentPosition.y + 20.0f * cosAngle, 10, GREEN);
+            DrawCircle(agent.rigidBody.position.x + 20.0f * sinAngle, agent.rigidBody.position.y + 20.0f * cosAngle, 10, GREEN);
             std::cout << "Line-Circle Collision!" << std::endl; 
         }
 
         if (LeftMouseLineCircleCollision) // turn to the right
         {
             DrawCircleV(mouseCenter, 10, GREEN); // collision color swap for target
-            DrawCircleV(agentPosition, 10, GREEN); // collision color swap for agent
+            DrawCircleV(agent.rigidBody.position, 10, GREEN); // collision color swap for agent
             rotationAngle -= 1.0f; // Rotate counter-clockwise
             agentVelocity.x = -cosAngle;
             agentVelocity.y = -sinAngle;
-            DrawCircle(agentPosition.x - 20.0f * cosAngle, agentPosition.y - 20.0f * sinAngle, 10, GREEN);
+            DrawCircle(agent.rigidBody.position.x - 20.0f * cosAngle, agent.rigidBody.position.y - 20.0f * sinAngle, 10, GREEN);
             std::cout << "Line-Circle Collision!" << std::endl;
         }
 
@@ -261,15 +283,29 @@ int main(void)
         {
             rlImGuiBegin(); // Start GUI
 
-            ImGui::SliderFloat("Position X", &agentPosition.x, 0, SCREEN_WIDTH, "%.3f", 0); // Slider for the X position of the Object(s)
+            ImGui::SliderFloat("Position X", &agent.rigidBody.position.x, 0, SCREEN_WIDTH, "%.3f", 0); // Slider for the X position of the Object(s)
+            ImGui::SliderFloat("Position Y", &agent.rigidBody.position.y, 0, SCREEN_HEIGHT, "%.3f", 0); // Slider for the Y position of the Object(s)
+            ImGui::SliderFloat("Velocity X", &agent.rigidBody.velocity.x, -agent.maxSpeed, agent.maxSpeed, "%.3f", 0); // Slider for the X Velocity of the Object(s)
+            ImGui::SliderFloat("Velocity Y", &agent.rigidBody.velocity.y, -agent.maxSpeed, agent.maxSpeed, "%.3f", 0); // Slider for the Y Velocity of the Object(s)
+            ImGui::SliderFloat("Max Speed", &agent.maxSpeed, 0.0f, 1000.0f, "%.3f", 0); // Slider for the maxSpeed of the Object(s)
+            ImGui::SliderFloat("Max Acceleration", &agent.maxAcceleration, 0.0f, 1000.0f, "%.3f", 0); // Slider for the maxAcceleration of the Objects(s) - how fast the object(s) can reach the maxSpeed
+
+        	ImGui::SliderFloat("Position X", &agentPosition.x, 0, SCREEN_WIDTH, "%.3f", 0); // Slider for the X position of the Object(s)
             ImGui::SliderFloat("Position Y", &agentPosition.y, 0, SCREEN_HEIGHT, "%.3f", 0); // Slider for the Y position of the Object(s)
             ImGui::SliderFloat("Velocity X", &agentVelocity.x, -maxSpeed, maxSpeed, "%.3f", 0); // Slider for the X Velocity of the Object(s)
             ImGui::SliderFloat("Velocity Y", &agentVelocity.y, -maxSpeed, maxSpeed, "%.3f", 0); // Slider for the Y Velocity of the Object(s)
-            //ImGui::SliderFloat("Max Speed", &agent.maxSpeed, 0.0f, 1000.0f, "%.3f", 0); // Slider for the maxSpeed of the Object(s)
-            //ImGui::SliderFloat("Max Acceleration", &agent.maxAcceleration, 0.0f, 1000.0f, "%.3f", 0); // Slider for the maxAcceleration of the Objects(s) - how fast the object(s) can reach the maxSpeed
 
             rlImGuiEnd(); // End GUI
         }
+
+        std::cout << "--------------------------------------------------------" << std::endl; // Console outputs
+        std::cout << "Agent Position: ( X: " << agent.rigidBody.position.x << ", Y: " << agent.rigidBody.position.y << ")" << std::endl; // Console output to check position of Agent Object
+        std::cout << "Target Position: ( X: " << targetPosition.x << ", Y: " << targetPosition.y << ")" << std::endl; // Console output to check position of Target
+        std::cout << "Frame DeltaTime: " << deltaTime << std::endl; // Console output to ensure delta time is functioning correctly according to frames
+        std::cout << "Agent Velocity: ( X: " << agent.rigidBody.velocity.x << ", Y: " << agent.rigidBody.velocity.y << ")" << std::endl; // agent velocity output
+        std::cout << "Displacement due to velocity: ( X: " << displacement.x << ", Y: " << displacement.y << ")" << std::endl; // per frame displacement
+        std::cout << "Agent Acceleration: " << agent.maxAcceleration << std::endl; // agent acceleration output
+        std::cout << "Distance from agent to target: " << distance << std::endl; // agent distance to target
 
         std::cout << "--------------------------------------------------------" << std::endl; // Console outputs
         std::cout << "Frame DeltaTime: " << deltaTime << std::endl; // Console output to ensure delta time is functioning correctly according to frames
@@ -277,16 +313,9 @@ int main(void)
         std::cout << "Moving Target Position: ( X: " << mousePosition.x << ", Y: " << mousePosition.y << ")" << std::endl; // Console output to check position of Target
         std::cout << "Stationary Target Position: ( X: " << obstaclePosition.x << ", Y: " << obstaclePosition.y << ")" << std::endl; // Console output to check position of Target
         std::cout << "Agent Velocity: ( X: " << agentVelocity.x << ", Y: " << agentVelocity.y << ")" << std::endl; // agent velocity output
-        //std::cout << "Displacement due to velocity: ( X: " << displacement.x << ", Y: " << displacement.y << ")" << std::endl; // per frame displacement
-        //std::cout << "Agent Acceleration: " << agent.maxAcceleration << std::endl; // agent acceleration output
-        //std::cout << "Distance from agent to target: " << distance << std::endl; // agent distance to target
-        //std::cout << "Nearest point Vector: ( X: " << nearestPoint.x << ", Y: " << nearestPoint.y << ")" << std::endl; // nearest angle points vector
-
-        //Vector2Distance(rightWhiskerEnd, obstaclePosition);
 
         EndDrawing();
     }
-
     CloseWindow();
     return 0;
 }
