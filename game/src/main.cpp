@@ -13,6 +13,9 @@ class Rigidbody
 public:
     Vector2 position; // position vector
     Vector2 velocity; // velocity vector
+    Vector2 acceleration;
+    Vector2 direction;
+    float angularSpeed;
 
     void Update(float deltaTime)
 	{
@@ -113,6 +116,7 @@ float PointToLineDistance(Vector2 point, Vector2 lineStart, Vector2 lineEnd)
     // Calculate the distance between the point and the nearest point on the line
     return Vector2Distance(point, nearestPoint);
 }
+
 
 int main(void)
 {
@@ -290,29 +294,27 @@ int main(void)
             ImGui::SliderFloat("Max Speed", &agent.maxSpeed, 0.0f, 1000.0f, "%.3f", 0); // Slider for the maxSpeed of the Object(s)
             ImGui::SliderFloat("Max Acceleration", &agent.maxAcceleration, 0.0f, 1000.0f, "%.3f", 0); // Slider for the maxAcceleration of the Objects(s) - how fast the object(s) can reach the maxSpeed
 
-        	ImGui::SliderFloat("Position X", &agentPosition.x, 0, SCREEN_WIDTH, "%.3f", 0); // Slider for the X position of the Object(s)
-            ImGui::SliderFloat("Position Y", &agentPosition.y, 0, SCREEN_HEIGHT, "%.3f", 0); // Slider for the Y position of the Object(s)
-            ImGui::SliderFloat("Velocity X", &agentVelocity.x, -maxSpeed, maxSpeed, "%.3f", 0); // Slider for the X Velocity of the Object(s)
-            ImGui::SliderFloat("Velocity Y", &agentVelocity.y, -maxSpeed, maxSpeed, "%.3f", 0); // Slider for the Y Velocity of the Object(s)
+        	ImGui::SliderFloat("Right Whisker X", &rightWhiskerEnd.x, 0, SCREEN_WIDTH, "%.3f", 0); // Slider for the X position of the Object(s)
+            ImGui::SliderFloat("Right Whisker Y", &rightWhiskerEnd.y, 0, SCREEN_HEIGHT, "%.3f", 0); // Slider for the Y position of the Object(s)
+            ImGui::SliderFloat("Left Whisker X", &leftWhiskerEnd.x, 0, SCREEN_WIDTH, "%.3f", 0); // Slider for the X position of the Object(s)
+            ImGui::SliderFloat("Left Whisker Y", &leftWhiskerEnd.y, 0, SCREEN_HEIGHT, "%.3f", 0); // Slider for the Y position of the Object(s)
+            ImGui::SliderFloat("Angular Velocity X", &agentVelocity.x, -maxSpeed, maxSpeed, "%.3f", 0); // Slider for the X Velocity of the Object(s)
+            ImGui::SliderFloat("Angular Velocity Y", &agentVelocity.y, -maxSpeed, maxSpeed, "%.3f", 0); // Slider for the Y Velocity of the Object(s)
 
             rlImGuiEnd(); // End GUI
         }
 
         std::cout << "--------------------------------------------------------" << std::endl; // Console outputs
-        std::cout << "Agent Position: ( X: " << agent.rigidBody.position.x << ", Y: " << agent.rigidBody.position.y << ")" << std::endl; // Console output to check position of Agent Object
-        std::cout << "Target Position: ( X: " << targetPosition.x << ", Y: " << targetPosition.y << ")" << std::endl; // Console output to check position of Target
         std::cout << "Frame DeltaTime: " << deltaTime << std::endl; // Console output to ensure delta time is functioning correctly according to frames
+    	std::cout << "Agent Position: ( X: " << agent.rigidBody.position.x << ", Y: " << agent.rigidBody.position.y << ")" << std::endl; // Console output to check position of Agent Object
+        std::cout << "Target Position: ( X: " << targetPosition.x << ", Y: " << targetPosition.y << ")" << std::endl; // Console output to check position of Target
+        std::cout << "Stationary Target Position: ( X: " << obstaclePosition.x << ", Y: " << obstaclePosition.y << ")" << std::endl; // Console output to check position of Target
         std::cout << "Agent Velocity: ( X: " << agent.rigidBody.velocity.x << ", Y: " << agent.rigidBody.velocity.y << ")" << std::endl; // agent velocity output
+        std::cout << "Whisker Agent Velocity: ( X: " << agentVelocity.x << ", Y: " << agentVelocity.y << ")" << std::endl; // agent velocity output
         std::cout << "Displacement due to velocity: ( X: " << displacement.x << ", Y: " << displacement.y << ")" << std::endl; // per frame displacement
         std::cout << "Agent Acceleration: " << agent.maxAcceleration << std::endl; // agent acceleration output
         std::cout << "Distance from agent to target: " << distance << std::endl; // agent distance to target
-
         std::cout << "--------------------------------------------------------" << std::endl; // Console outputs
-        std::cout << "Frame DeltaTime: " << deltaTime << std::endl; // Console output to ensure delta time is functioning correctly according to frames
-    	std::cout << "Agent Position: ( X: " << agentPosition.x << ", Y: " << agentPosition.y << ")" << std::endl; // Console output to check position of Agent Object
-        std::cout << "Moving Target Position: ( X: " << mousePosition.x << ", Y: " << mousePosition.y << ")" << std::endl; // Console output to check position of Target
-        std::cout << "Stationary Target Position: ( X: " << obstaclePosition.x << ", Y: " << obstaclePosition.y << ")" << std::endl; // Console output to check position of Target
-        std::cout << "Agent Velocity: ( X: " << agentVelocity.x << ", Y: " << agentVelocity.y << ")" << std::endl; // agent velocity output
 
         EndDrawing();
     }
