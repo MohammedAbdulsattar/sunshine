@@ -152,11 +152,11 @@ int main(void)
         Vector2 agentPosition = { SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 }; // Agent starting position set to half the screen width and height
         //Vector2 agentVelocity = { 5.0f, 5.0f }; // velocity for the agent to work with
         Vector2 mousePosition = GetMousePosition(); // get mouse position vector based on XY coordinates in screen
-        Vector2 obstaclePosition = {200, 200}; // get mouse position vector based on XY coordinates in screen
+        Vector2 obstaclePosition = {200, 200}; // get Stationary Obstacle vector based on XY coordinates in screen
 
         Vector2 direction = Vector2Subtract(mousePosition, agent.rigidBody.position); // Create a direction vector from the agent position to the obstacle position -> result = { v1.x - v2.x, v1.y - v2.y };
 
-        DrawCircleV(obstaclePosition, 10, { 255,0,255,128 }); // Draw a transparent circle to represent the mouse obstacle target
+        DrawCircleV(obstaclePosition, 10, { 255,0,255,128 }); // Draw a transparent circle to represent the Stationary obstacle target
         DrawCircleV(mousePosition, 10, { 255,0,255,128 }); // Draw a transparent circle to represent the mouse obstacle target
 
         float lineLength = 100.0f; // Length of the whisker line
@@ -168,15 +168,15 @@ int main(void)
 
         //DrawCircleV(agent.rigidBody.position, 10, BLUE); // Draw the circle representing the agent
 
-        float whiskerAngle = 270.0f; // Angle of the whiskers in float degrees
+        float whiskerAngle = 15.0f; // Angle of the whiskers in float degrees
 
         // create a vector which originates from the direction vector and is based on the whiskerAngle
         // Mathematical Formula -> cosres = cosf(angle); sinres = sinf(angle);
         // new angle vector x = (input vector x * cos angle) - (input vector y * sin angle)
         // new angle vector y = (input vector x * sin angle) + (input vector y * cos angle)
         // return the new angle vector(x,y)
-        Vector2 rightWhiskerDirection = Vector2Rotate(direction, whiskerAngle); // clockwise rotation -> result.x = v.x*cosres - v.y*sinres; result.y = v.x*sinres + v.y*cosres;
-        Vector2 leftWhiskerDirection = Vector2Rotate(direction, -whiskerAngle); // counter-clockwise rotation -> result.x = v.x*(-cosres) - v.y*(-sinres); result.y = v.x*(-sinres) + v.y*(-cosres);
+        Vector2 rightWhiskerDirection = Vector2Rotate(direction, whiskerAngle * DEG2RAD); // clockwise rotation -> result.x = v.x*cosres - v.y*sinres; result.y = v.x*sinres + v.y*cosres;
+        Vector2 leftWhiskerDirection = Vector2Rotate(direction, -whiskerAngle * DEG2RAD); // counter-clockwise rotation -> result.x = v.x*(-cosres) - v.y*(-sinres); result.y = v.x*(-sinres) + v.y*(-cosres);
 
         // create a rightWhiskerEnd vector starting from the agent.rigidBody.position and extending in the Scaled Normalized rightWhiskerDirection according to the lineLength
         Vector2 rightWhiskerEnd = Vector2Add(agent.rigidBody.position, Vector2Scale(Vector2Normalize(rightWhiskerDirection), lineLength)); // Mathematical understanding -> agent.rigidBody.position + (Scale Normalize (rightWhiskerDirection * LineLength)
@@ -194,6 +194,14 @@ int main(void)
         float mouseLeft = PointToLineDistance(mouseCenter, agent.rigidBody.position, leftWhiskerEnd);
         bool rightMouseLineCircleCollision = (mouseRight <= mouseRadius);
         bool LeftMouseLineCircleCollision = (mouseLeft <= mouseRadius);
+
+        Vector2 ObstacleCenter = obstaclePosition; // stationary obstacle vector
+        float ObstacleRadius = 10.0f; // stationary obstacle radius
+
+        float ObstacleMouseRight = PointToLineDistance(ObstacleCenter, agent.rigidBody.position, rightWhiskerEnd);
+        float ObstacleMouseLeft = PointToLineDistance(ObstacleCenter, agent.rigidBody.position, leftWhiskerEnd);
+        bool RightObstacleCollision = (ObstacleMouseRight <= ObstacleRadius);
+        bool LeftObstacleCollision = (ObstacleMouseLeft <= ObstacleRadius);
 
         // Lab 3 - Part 2
         //Vector2 nearestPoint = Vector2Add(agent.rigidBody.position, Vector2Scale(Vector2Normalize(direction), lineLength));
@@ -273,6 +281,22 @@ int main(void)
             agentVelocity.y = -sinAngle;
             DrawCircle(agent.rigidBody.position.x - 20.0f * cosAngle, agent.rigidBody.position.y - 20.0f * sinAngle, 10, GREEN);
             std::cout << "Line-Circle Collision!" << std::endl;
+        }
+
+        if (RightObstacleCollision)
+        {
+            std::cout << "imminent collision with stationary obstacle and right whisker!" << std::endl;
+            Vector2 linearDirection = Vector2Normalize(agent.rigidBody.velocity);
+            float linearSpeed = Vector2Length(agent.rigidBody.velocity);
+            agent.rigidBody.velocity = Vector2Scale(Vector2Rotate(linearDirection, -agent.rigidBody.angularSpeed * deltaTime * DEG2RAD), linearSpeed);
+        }
+
+        if (LeftObstacleCollision)
+        {
+            std::cout << "imminent collision with stationary obstacle and left whisker!" << std::endl;
+            Vector2 linearDirection = Vector2Normalize(agent.rigidBody.velocity);
+            float linearSpeed = Vector2Length(agent.rigidBody.velocity);
+            agent.rigidBody.velocity = Vector2Scale(Vector2Rotate(linearDirection, -agent.rigidBody.angularSpeed * deltaTime * DEG2RAD), linearSpeed);
         }
 
         DrawRectangle(970, 10, 300, 30, { 200, 150, 200, 255 });
