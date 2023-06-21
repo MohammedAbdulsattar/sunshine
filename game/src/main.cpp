@@ -8,7 +8,7 @@
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
 
-// Lab 4 - Part 1 through 4
+// Lab 4 - Part 1
 enum class Tile
 {
     Floor = 0, // Floor tiles can be walked on
@@ -16,9 +16,17 @@ enum class Tile
     Count // number of Tile types (i.e. 2)
 };
 
+// Lab 4 - Part 1
 #define MAP_WIDTH 16 // rows (down from origin or start)
 #define MAP_HEIGHT 8 // columns (across from origin or start)
 
+// Lab 4 - Part 8A
+const Vector2 NORTH = { -1, 0 };
+const Vector2 SOUTH = { 1, 0 };
+const Vector2 EAST = { 0, 1 };
+const Vector2 WEST = { 0, -1 };
+
+// Lab 4 - Part 1 to Part 4
 struct TileCoordinates
 {
     int x = 0;
@@ -53,6 +61,38 @@ struct TileCoordinates
     }
 };
 
+// Lab 4 - Part 3
+bool operator!=(const TileCoordinates& l, const TileCoordinates& r)
+{
+    return l.x != r.x || l.y != r.y;
+}
+
+bool operator==(const TileCoordinates& l, const TileCoordinates& r)
+{
+    return l.x == r.x || l.y == r.y;
+}
+
+TileCoordinates operator+(const TileCoordinates& l, const TileCoordinates& r)
+{
+    return { l.x + r.x, l.y + r.y };
+}
+
+TileCoordinates operator-(const TileCoordinates& l, const TileCoordinates& r)
+{
+    return { l.x - r.x, l.y - r.y };
+}
+
+TileCoordinates operator*(const TileCoordinates& l, const TileCoordinates& r)
+{
+    return { l.x * r.x, l.y * r.y };
+}
+
+TileCoordinates operator/(const TileCoordinates& l, const TileCoordinates& r)
+{
+    return { l.x / r.x, l.y / r.y };
+}
+
+// Lab 4 - Part 1 to Part 4
 class Tilemap
 {
 public:
@@ -189,11 +229,27 @@ public:
         return false;
     }
 
-    // Lab 4 - Part 8
-    const Vector2 NORTH = { -1, 0 };
-    const Vector2 SOUTH = { 1, 0 };
-    const Vector2 EAST = { 0, 1 };
-    const Vector2 WEST = { 0, -1 };
+    // Lab 4 - Part 8B
+    std::vector<Vector2> GetTraversibleTilesAdjacentTo(Vector2 tilePos)
+    {
+        std::vector<Vector2> adjacentTilePositions;
+        // North, South, East, West
+        Vector2 N = tilePos + NORTH;
+        Vector2 S = tilePos + SOUTH;
+        Vector2 E = tilePos + EAST;
+        Vector2 W = tilePos + WEST;
+
+        if (IsTraversible(N))
+            adjacentTilePositions.push_back(N);
+        if (IsTraversible(S))
+            adjacentTilePositions.push_back(S);
+        if (IsTraversible(W))
+            adjacentTilePositions.push_back(W);
+        if (IsTraversible(E))
+            adjacentTilePositions.push_back(E);
+
+        return adjacentTilePositions;
+    }
 
 private:
     Tile tiles[MAP_WIDTH][MAP_HEIGHT];
@@ -205,36 +261,6 @@ private:
     int width = 0; // number of columns
     int height = 0; // number of rows in each column
 };
-
-bool operator!=(const TileCoordinates& l, const TileCoordinates& r)
-{
-    return l.x != r.x || l.y != r.y;
-}
-
-bool operator==(const TileCoordinates& l, const TileCoordinates& r)
-{
-    return l.x == r.x || l.y == r.y;
-}
-
-TileCoordinates operator+(const TileCoordinates& l, const TileCoordinates& r)
-{
-    return { l.x + r.x, l.y + r.y };
-}
-
-TileCoordinates operator-(const TileCoordinates& l, const TileCoordinates& r)
-{
-    return { l.x - r.x, l.y - r.y };
-}
-
-TileCoordinates operator*(const TileCoordinates& l, const TileCoordinates& r)
-{
-    return { l.x * r.x, l.y * r.y };
-}
-
-TileCoordinates operator/(const TileCoordinates& l, const TileCoordinates& r)
-{
-    return { l.x / r.x, l.y / r.y };
-}
 
 
 int main(void)
