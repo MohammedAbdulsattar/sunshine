@@ -8,6 +8,7 @@
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
 
+// Lab 4 - Part 1 through 4
 enum class Tile
 {
     Floor = 0, // Floor tiles can be walked on
@@ -57,6 +58,7 @@ class Tilemap
 public:
     int tileSizeX = 100; // Width of tiles in pixels when drawing
     int tileSizeY = 100; // Height of tiles in pixels when drawing
+    Texture2D tileTextures[(int)Tile::Count]; // allocate an array with one Texture for each Tile type
 
     Vector2 GetScreenPosOfTile(TileCoordinates tilePosition) // convert from a tile to a screen position at top left corner of tile
     {
@@ -70,7 +72,7 @@ public:
 
     int GetGridWidth() // get the number of columns in the grid
     {
-	    
+	   
     }
 
     int GetGridHeight() // get the number of rows in the grid
@@ -107,6 +109,91 @@ public:
     {
 	    
     }
+
+    // Lab 4 - Part 5A
+    void DrawBorders(Color color = BLACK)
+    {
+        for (int x = 0; x < GetGridWidth(); x++)
+            DrawLine(x * tileSizeX, 0, x * tileSizeX, GetGridHeight() * tileSizeY, color);
+
+        for (int y = 0; y < GetGridHeight(); y++)
+            DrawLine(0, y * tileSizeY,  GetGridWidth() * tileSizeX, y * tileSizeY, color);
+    }
+
+    void DrawTiles()
+    {
+	    for (int x = 0; x < GetGridWidth(); x++)
+	    {
+		    for (int y = 0; y < GetGridHeight(); y++)
+		    {
+                Tile tileType = tiles[x][y]; // get what type of tile is here
+                Vector2 tilePosition = TilePosToScreenPos(x, y);
+                Color colorToDraw = PINK;
+                if (tileType == Tile::Floor)
+                    colorToDraw = WHITE;
+                else if (tileType == Tile::Wall)
+                    colorToDraw = DARKGRAY;
+
+                // Draw different colors at different positions based on the type of tile
+                DrawRectangle(tilePosition.x, tilePosition.y, tileSizeX, tileSizeY, colorToDraw);
+		    }
+	    }
+    }
+
+	// Lab 4 - Part 5B
+    void LoadTextures(const char* FloorTilePath, const char* WallTilePath)
+    {
+        tileTextures[(int)Tile::Floor] = LoadTexture(FloorTilePath);
+        tileTextures[(int)Tile::Wall] = LoadTexture(WallTilePath);
+    }
+
+    void DrawTilesTextures()
+    {
+        for (int x = 0; x < GetGridWidth(); x++)
+        {
+            for (int y = 0; y < GetGridHeight(); y++)
+            {
+                Tile tileType = GetTile(x,y); // get what type of tile is here
+                Vector2 tilePosition = TilePosToScreenPos(x, y);
+                Texture tex = tileTextures[(int)tileType]; // use tile type as index in the tileTextures array
+                Rectangle src = { 0,0, tex.width, (int)tex.height };
+                Rectangle dst = { tilePosition.x,tilePosition.y, tileSizeX, tileSizeY };
+                DrawTexturePro(tex, src, dst, Vector2{ 0.5f, 0.5f }, 0, WHITE);
+            }
+        }
+    }
+
+    // Lab 4 - Part 6
+    void RegenerateLevel(Tilemap& level, float chanceOfWall = 0.2)
+    {
+	    for (int x = 0; x < level.GetGridWidth(); x++)
+	    {
+		    for (int y= 0; y < level.GetGridHeight(); y++)
+		    {
+                if (GetRandomValue(0.0, 1.0) < chanceOfWall)
+                    level.SetTile(x, y, Tile::Wall);
+                else
+                    level.SetTile(x, y, Tile::Floor);
+		    }
+	    }
+    }
+
+    // Lab 4 - Part 7
+    bool IsTraversible(Vector2 tilePosition)
+    {
+	    if (IsInsideGrid(tilePosition))
+	    {
+            if (GetTile(tilePosition.x, tilePosition.y) == Tile::Floor)
+                return true;
+	    }
+        return false;
+    }
+
+    // Lab 4 - Part 8
+    const Vector2 NORTH = { -1, 0 };
+    const Vector2 SOUTH = { 1, 0 };
+    const Vector2 EAST = { 0, 1 };
+    const Vector2 WEST = { 0, -1 };
 
 private:
     Tile tiles[MAP_WIDTH][MAP_HEIGHT];
