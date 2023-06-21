@@ -18,8 +18,96 @@ enum class Tile
 #define MAP_WIDTH 16 // rows (down from origin or start)
 #define MAP_HEIGHT 8 // columns (across from origin or start)
 
+struct TileCoordinates
+{
+    int x = 0;
+    int y = 0;
+
+    TileCoordinates()
+    {
+
+    }
+
+    TileCoordinates(int ax, int ay)
+    {
+        x = ax;
+        y = ay;
+    }
+
+    TileCoordinates(float ax, float ay)
+    {
+        x = (int)ax;
+        y = (int)ay;
+    }
+
+    TileCoordinates(Vector2 position)
+    {
+        x = (int)position.x;
+        y = (int)position.y;
+    }
+
+    Vector2 toVec2() const
+    {
+        return Vector2{ (float)x, (float)y };
+    }
+};
+
 class Tilemap
 {
+public:
+    int tileSizeX = 100; // Width of tiles in pixels when drawing
+    int tileSizeY = 100; // Height of tiles in pixels when drawing
+
+    Vector2 GetScreenPosOfTile(TileCoordinates tilePosition) // convert from a tile to a screen position at top left corner of tile
+    {
+        return Vector2{ (float) tilePosition.x * tileSizeX, (float) tilePosition.y * tileSizeY };
+    }
+
+    TileCoordinates GetTileAtScreenPos(Vector2 positionOnScreen) // find a tile coordinate given a position on the screen over a tile
+    {
+        return { floorf(positionOnScreen.x / tileSizeX), floorf(positionOnScreen.y / tileSizeY) };
+    }
+
+    int GetGridWidth() // get the number of columns in the grid
+    {
+	    
+    }
+
+    int GetGridHeight() // get the number of rows in the grid
+    {
+
+    }
+
+    Tile GetTile(int x, int y) // get the tile at the specified coordinate in the grid
+    {
+	    
+    }
+
+    void SetTile(int x, int y, Tile type) // set the tile at the specified coordinate in the grind
+    {
+	    
+    }
+
+    bool IsInsideGrid(int x, int y) // return true if the coordinate is inside the grid, false otherwise
+    {
+	    
+    }
+
+    Vector2 TilePosToScreenPos(Vector2 tilePosition) // convert from a tile coordinate to a screen position
+    {
+	    
+    }
+
+    Vector2 TilePosToScreenPos(int x, int y) // convert from a tile coordinate to a screen position
+    {
+	    
+    }
+
+    Vector2 ScreenPosToTilePos(Vector2 positionOnScreen) // find a tile coordinate given a position on the screen over a tile
+    {
+	    
+    }
+
 private:
     Tile tiles[MAP_WIDTH][MAP_HEIGHT];
 
@@ -30,6 +118,37 @@ private:
     int width = 0; // number of columns
     int height = 0; // number of rows in each column
 };
+
+bool operator!=(const TileCoordinates& l, const TileCoordinates& r)
+{
+    return l.x != r.x || l.y != r.y;
+}
+
+bool operator==(const TileCoordinates& l, const TileCoordinates& r)
+{
+    return l.x == r.x || l.y == r.y;
+}
+
+TileCoordinates operator+(const TileCoordinates& l, const TileCoordinates& r)
+{
+    return { l.x + r.x, l.y + r.y };
+}
+
+TileCoordinates operator-(const TileCoordinates& l, const TileCoordinates& r)
+{
+    return { l.x - r.x, l.y - r.y };
+}
+
+TileCoordinates operator*(const TileCoordinates& l, const TileCoordinates& r)
+{
+    return { l.x * r.x, l.y * r.y };
+}
+
+TileCoordinates operator/(const TileCoordinates& l, const TileCoordinates& r)
+{
+    return { l.x / r.x, l.y / r.y };
+}
+
 
 int main(void)
 {
