@@ -218,18 +218,25 @@ public:
     }
 
     // Lab 4 - Part 6
-    void RegenerateLevel(Tilemap& level, float chanceOfWall = 0.2)
+    int RegenerateLevel(float chanceOfWall = 0.2)
     {
-	    for (int x = 0; x < level.GetGridWidth(); x++)
+        int wallCount = 0; // variable to keep track of the number of obstacles present
+
+    	for (int x = 0; x < GetGridWidth(); x++)
 	    {
-		    for (int y= 0; y < level.GetGridHeight(); y++)
+		    for (int y= 0; y < GetGridHeight(); y++)
 		    {
-                if (GetRandomValue(0.0, 1.0) < chanceOfWall)
-                    level.SetTile(x, y, Tile::Wall);
+                if (GetRandomValue(0.0, 100) < chanceOfWall * 100)
+                {
+                    SetTile(x, y, Tile::Wall);
+                    wallCount++; // increment the count of walls to keep track of how many obstacles are being placed
+                }
                 else
-                    level.SetTile(x, y, Tile::Floor);
+                    SetTile(x, y, Tile::Floor);
 		    }
 	    }
+
+        return wallCount; // return the count of obstacles present
     }
 
     // Lab 4 - Part 7
@@ -291,6 +298,8 @@ int main(void)
     // Floor and Wall assets picked and edited out from sprite sheet for texture loading
     tilemap.LoadTextures("../game/assets/textures/Floor.png", "../game/assets/textures/Wall.png"); // Load textures
 
+    int numberOfWalls = tilemap.RegenerateLevel(); // Initial population
+
     while (!WindowShouldClose())
     {
         BeginDrawing();
@@ -300,6 +309,11 @@ int main(void)
 
         tilemap.DrawTilesTextures(); // Draw the tilemap with textures
         tilemap.DrawBorders(); // Draw the tilemap borders
+
+        if (IsKeyPressed(KEY_R)) // Replace 'KEY_R' with the key you want to use
+        {
+            numberOfWalls = tilemap.RegenerateLevel(); // Regenerate level on key press
+        }
 
         DrawText("Tilemaps!", 16, 9, 20, RED);
         DrawRectangle(970, 10, 300, 30, { 200, 150, 200, 255 });
@@ -322,7 +336,8 @@ int main(void)
 
         std::cout << "--------------------------------------------------------" << std::endl; // Console outputs
         std::cout << "Frame DeltaTime: " << deltaTime << std::endl; // Console output to ensure delta time is functioning correctly according to frames
-        std::cout << "TileMap Size: ( X: " << tilemap.tileSizeX << ", Y: " << tilemap.tileSizeY << ")" << std::endl; // Console output to check position of Agent Object
+        std::cout << "TileMap Size: ( X: " << tilemap.tileSizeX << ", Y: " << tilemap.tileSizeY << ")" << std::endl; // Console output to check current tilemap sizes for X and Y
+        std::cout << "Number of Obstacles ( Walls: " << numberOfWalls << ")" << std::endl; // Console output to check the number of wall obstacles
         std::cout << "--------------------------------------------------------" << std::endl; // Console outputs
 
         EndDrawing();
