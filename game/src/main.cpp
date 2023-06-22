@@ -8,6 +8,25 @@
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
 
+// Lab 4 - Homework Part 2
+class Character
+{
+public:
+    Texture2D sprite; // Texture to hold character sprite
+    Vector2 position; // position vector for the character
+
+    Character(const char* texturePath, Vector2 startPos)
+    {
+        sprite = LoadTexture(texturePath); // load texture using the provided texture path
+        position = startPos; // set the position for character according to current position
+    }
+
+    void Draw()
+    {
+        DrawTextureEx(sprite, position, 0.0f, 3.0f, WHITE); // render out the character sprite at the current position
+    }
+};
+
 // Lab 4 - Part 1
 enum class Tile
 {
@@ -21,10 +40,10 @@ enum class Tile
 #define MAP_HEIGHT 8 // columns (across from origin or start)
 
 // Lab 4 - Part 8A
-const Vector2 NORTH = { -1, 0 };
-const Vector2 SOUTH = { 1, 0 };
-const Vector2 EAST = { 0, 1 };
-const Vector2 WEST = { 0, -1 };
+const Vector2 NORTH = { -1, 0 }; // north direction vector
+const Vector2 SOUTH = { 1, 0 }; // south direction vector
+const Vector2 EAST = { 0, 1 }; // east direction vector
+const Vector2 WEST = { 0, -1 }; // west direction vector
 
 // Lab 4 - Part 1 to Part 4
 struct TileCoordinates
@@ -96,8 +115,8 @@ TileCoordinates operator/(const TileCoordinates& l, const TileCoordinates& r)
 class Tilemap
 {
 public:
-    int tileSizeX = 100; // Width of tiles in pixels when drawing
-    int tileSizeY = 100; // Height of tiles in pixels when drawing
+    int tileSizeX = 80; // Width of tiles in pixels when drawing
+    int tileSizeY = 90; // Height of tiles in pixels when drawing
     Texture2D tileTextures[(int)Tile::Count]; // allocate an array with one Texture for each Tile type
 
     Tilemap()
@@ -120,7 +139,10 @@ public:
 
     TileCoordinates GetTileAtScreenPos(Vector2 positionOnScreen) // find a tile coordinate given a position on the screen over a tile
     {
-        return { floorf(positionOnScreen.x / tileSizeX), floorf(positionOnScreen.y / tileSizeY) };
+        int tileX = static_cast<int>(positionOnScreen.x / tileSizeX);
+        int tileY = static_cast<int>(positionOnScreen.y / tileSizeY);
+        return TileCoordinates{ tileX, tileY };
+    	//return { floorf(positionOnScreen.x / tileSizeX), floorf(positionOnScreen.y / tileSizeY) };
     }
 
     int GetGridWidth() // get the number of columns in the grid
@@ -272,6 +294,47 @@ public:
         return adjacentTilePositions;
     }
 
+    // Lab 4 - Homework Part 1
+    void DrawAdjacency()
+    {
+        for (int x = 0; x < GetGridWidth(); x++) // iterate through all the columns
+        {
+            for (int y = 0; y < GetGridHeight(); y++) // iterate through all the rows
+            {
+                if (GetTile(x, y) == Tile::Floor) // if current tile at position XY in the grid is a floor tile
+                {
+                    std::vector<Vector2> adjacents = GetTraversibleTilesAdjacentTo(Vector2{ (float)x, (float)y }); // create a container of vector objects based on tile positions
+                    for (auto& tile : adjacents) // iterate through the array of vector objects
+                    {
+                        Vector2 currentCenter = Vector2{ (float)x * tileSizeX + tileSizeX / 2, (float)y * tileSizeY + tileSizeY / 2 }; // create a vector object at the current tile
+                        Vector2 adjacentCenter = Vector2{ tile.x * tileSizeX + tileSizeX / 2, tile.y * tileSizeY + tileSizeY / 2 }; // create a vector object at the adjacent tile
+                        DrawLineEx(currentCenter, adjacentCenter, 1.0f, GREEN); // draw a line from current tile to the adjacent tile
+                        DrawCircle(currentCenter.x, currentCenter.y, 5.0f, GREEN); // draw a circle at the current tile
+                    }
+                }
+            }
+        }
+    }
+
+    // Lab 4 - Homework Part 2
+    bool CanMove(Tilemap tilemap, Vector2 newPos, const Character& player) // accept a tilemap, vector position, and player character object
+    {
+        // create XY coordinates for the top left corner of the player
+    	TileCoordinates coordsTopLeft = tilemap.GetTileAtScreenPos(newPos); 
+        // create XY coordinates for the top right corner of the player based on the sprite width from the starting X position
+        TileCoordinates coordsTopRight = tilemap.GetTileAtScreenPos({ newPos.x + player.sprite.width * 3.0f, newPos.y }); 
+        // Create XY coordinates for the bottom left corner of the player based on the sprite height from the starting Y position
+        TileCoordinates coordsBottomLeft = tilemap.GetTileAtScreenPos({ newPos.x, newPos.y + player.sprite.height * 3.0f }); 
+        // Create XY coordinates for the bottom right corner of the player based on the sprite width and height from the starting XY position
+        TileCoordinates coordsBottomRight = tilemap.GetTileAtScreenPos({ newPos.x + player.sprite.width * 3.0f, newPos.y + player.sprite.height * 3.0f }); 
+
+        // return all coordinates of the player based on whether a tile the player currently is on can be traversed
+        return tilemap.IsTraversible(Vector2{ (float)coordsTopLeft.x, (float)coordsTopLeft.y }) &&
+            tilemap.IsTraversible(Vector2{ (float)coordsTopRight.x, (float)coordsTopRight.y }) &&
+            tilemap.IsTraversible(Vector2{ (float)coordsBottomLeft.x, (float)coordsBottomLeft.y }) &&
+            tilemap.IsTraversible(Vector2{ (float)coordsBottomRight.x, (float)coordsBottomRight.y });
+    }
+
 private:
     Tile tiles[MAP_WIDTH][MAP_HEIGHT];
 
@@ -296,9 +359,12 @@ int main(void)
     // Texture Pack Files obtained from https://itch.io/bundle/download/6UMZoe6qhcj3_ccsNYMxVwLmiHxAe7Fe3yOG1ve7 (Purchased)
     // Original Texture Pack Link https://almostapixel.itch.io/small-burg-village-pack
     // Floor and Wall assets picked and edited out from sprite sheet for texture loading
-    tilemap.LoadTextures("../game/assets/textures/Floor.png", "../game/assets/textures/Wall.png"); // Load textures
+    tilemap.LoadTextures("../game/assets/textures/Floor.png", "../game/assets/textures/Wall.png"); // Load Floor and Wall textures from file
 
-    int numberOfWalls = tilemap.RegenerateLevel(); // Initial population
+    // Player asset picked and edited out from sprite sheet for texture loading
+    Character player("../game/assets/textures/Player.png", Vector2{ 0, 0 }); // Load the player texture from file and give it a starting XY position vector
+
+    int numberOfWalls = tilemap.RegenerateLevel(); // Initial population of floors and walls (needs to be done beforehand to ensure proper memory initialization and avoid illegal memory access)
 
     while (!WindowShouldClose())
     {
@@ -308,18 +374,59 @@ int main(void)
         float deltaTime = GetFrameTime(); // Get time in seconds for last frame drawn (delta time)
 
         tilemap.DrawTilesTextures(); // Draw the tilemap with textures
+        tilemap.DrawAdjacency(); // Draw the tilemap adjacencies for floor tiles
         tilemap.DrawBorders(); // Draw the tilemap borders
+        player.Draw(); // Draw the player character
+
+        float moveAmount = 1.0f;
+
+        if (IsKeyDown(KEY_W) && player.position.y > 0)
+        {
+            Vector2 newPos = { player.position.x, player.position.y - moveAmount }; // create a new position vector based on the current player XY position and the direction they want to head towards (up)
+            if (tilemap.CanMove(tilemap, newPos, player)) // pass in the tilemap, current position of the moving player, and the player object to CanMove check
+            {
+                player.position.y -= moveAmount; // allow player to move in the up direction
+            }
+        }
+
+        if (IsKeyDown(KEY_S) && player.position.y < SCREEN_HEIGHT)
+        {
+            Vector2 newPos = { player.position.x, player.position.y + moveAmount }; // create a new position vector based on the current player XY position and the direction they want to head towards (down)
+            if (tilemap.CanMove(tilemap, newPos, player)) // pass in the tilemap, current position of the moving player, and the player object to CanMove check
+            {
+                player.position.y += moveAmount; // allow player to move in the down direction
+            }
+        }
+
+        if (IsKeyDown(KEY_A) && player.position.x > 0)
+        {
+            Vector2 newPos = { player.position.x - moveAmount, player.position.y }; // create a new position vector based on the current player XY position and the direction they want to head towards (left)
+            if (tilemap.CanMove(tilemap, newPos, player)) // pass in the tilemap, current position of the moving player, and the player object to CanMove check
+            {
+                player.position.x -= moveAmount; // allow player to move in the left direction
+            }
+        }
+
+        if (IsKeyDown(KEY_D) && player.position.x < SCREEN_WIDTH)
+        {
+            Vector2 newPos = { player.position.x + moveAmount, player.position.y  }; // create a new position vector based on the current player XY position and the direction they want to head towards (right)
+            if (tilemap.CanMove(tilemap, newPos, player)) // pass in the tilemap, current position of the moving player, and the player object to CanMove check
+            {
+                player.position.x += moveAmount; // allow player to move in the right direction
+            }
+        }
 
         if (IsKeyPressed(KEY_R)) // Replace 'KEY_R' with the key you want to use
         {
-            numberOfWalls = tilemap.RegenerateLevel(); // Regenerate level on key press
+            numberOfWalls = tilemap.RegenerateLevel(); // Regenerate level on key press - creating new randomly placed floors and walls based on the randomizer of the walls in RegenerateLevel()
+            tilemap.DrawBorders(); // Draw the tilemap borders
         }
 
         DrawText("Tilemaps!", 16, 9, 20, RED);
         DrawRectangle(970, 10, 300, 30, { 200, 150, 200, 255 });
         DrawText("Press ~ to open/close GUI", 980, 15, 20, WHITE); // GUI Instructions
 
-        if (IsKeyPressed(KEY_GRAVE))
+        if (IsKeyPressed(KEY_GRAVE)) // Detect GUI key trigger
         {
             useGUI = !useGUI; // Flip trigger for GUI Render when Tilde (~) Key is pressed
         }
@@ -338,12 +445,13 @@ int main(void)
         std::cout << "Frame DeltaTime: " << deltaTime << std::endl; // Console output to ensure delta time is functioning correctly according to frames
         std::cout << "TileMap Size: ( X: " << tilemap.tileSizeX << ", Y: " << tilemap.tileSizeY << ")" << std::endl; // Console output to check current tilemap sizes for X and Y
         std::cout << "Number of Obstacles ( Walls: " << numberOfWalls << ")" << std::endl; // Console output to check the number of wall obstacles
+        std::cout << "Player Position: ( X: " << player.position.x << ", Y: " << player.position.y << ")" << std::endl; // Console output to track current player XY position
         std::cout << "--------------------------------------------------------" << std::endl; // Console outputs
 
-        EndDrawing();
+        EndDrawing(); // end all raylib drawings
     }
 
-    rlImGuiShutdown();
-    CloseWindow();
+    rlImGuiShutdown(); // Shut down GUI
+    CloseWindow(); // Close Window
     return 0;
 }
