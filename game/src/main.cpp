@@ -64,12 +64,12 @@ struct TileCoordinates
 // Lab 4 - Part 3
 bool operator!=(const TileCoordinates& l, const TileCoordinates& r)
 {
-    return l.x != r.x || l.y != r.y;
+    return l.x != r.x && l.y != r.y; // use || or && for comparison, not sure?
 }
 
 bool operator==(const TileCoordinates& l, const TileCoordinates& r)
 {
-    return l.x == r.x || l.y == r.y;
+    return l.x == r.x && l.y == r.y; // use || or && for comparison, not sure?
 }
 
 TileCoordinates operator+(const TileCoordinates& l, const TileCoordinates& r)
@@ -100,6 +100,19 @@ public:
     int tileSizeY = 100; // Height of tiles in pixels when drawing
     Texture2D tileTextures[(int)Tile::Count]; // allocate an array with one Texture for each Tile type
 
+    Tilemap()
+    {
+        for (int x = 0; x < MAP_WIDTH; x++)
+        {
+            for (int y = 0; y < MAP_HEIGHT; y++)
+            {
+                tiles[x][y] = Tile::Floor; // Or Tile::Wall, just initialize to something
+            }
+        }
+        width = MAP_WIDTH; // Initialize width
+        height = MAP_HEIGHT; // Initialize height
+    }
+
     Vector2 GetScreenPosOfTile(TileCoordinates tilePosition) // convert from a tile to a screen position at top left corner of tile
     {
         return Vector2{ (float) tilePosition.x * tileSizeX, (float) tilePosition.y * tileSizeY };
@@ -112,42 +125,43 @@ public:
 
     int GetGridWidth() // get the number of columns in the grid
     {
-	   
+        return width;
     }
 
     int GetGridHeight() // get the number of rows in the grid
     {
-
+        return height;
     }
 
     Tile GetTile(int x, int y) // get the tile at the specified coordinate in the grid
     {
-	    
+        return tiles[x][y];
     }
 
     void SetTile(int x, int y, Tile type) // set the tile at the specified coordinate in the grind
     {
-	    
+        tiles[x][y] = type;
     }
 
     bool IsInsideGrid(int x, int y) // return true if the coordinate is inside the grid, false otherwise
     {
-	    
+        return x >= 0 && x < width && y >= 0 && y < height;
     }
 
     Vector2 TilePosToScreenPos(Vector2 tilePosition) // convert from a tile coordinate to a screen position
     {
-	    
+        return Vector2{ tilePosition.x * tileSizeX, tilePosition.y * tileSizeY }; 
     }
 
     Vector2 TilePosToScreenPos(int x, int y) // convert from a tile coordinate to a screen position
     {
-	    
+        //return Vector2{ x * tileSizeX, y * tileSizeY }; // not correct way of doing this due to int-float issues requiring a static cast
+        return Vector2{ static_cast<float>(x * tileSizeX), static_cast<float>(y * tileSizeY) };
     }
 
     Vector2 ScreenPosToTilePos(Vector2 positionOnScreen) // find a tile coordinate given a position on the screen over a tile
     {
-	    
+        return Vector2{ floorf(positionOnScreen.x / tileSizeX), floorf(positionOnScreen.y / tileSizeY) };
     }
 
     // Lab 4 - Part 5A
@@ -196,9 +210,9 @@ public:
                 Tile tileType = GetTile(x,y); // get what type of tile is here
                 Vector2 tilePosition = TilePosToScreenPos(x, y);
                 Texture tex = tileTextures[(int)tileType]; // use tile type as index in the tileTextures array
-                Rectangle src = { 0,0, tex.width, (int)tex.height };
-                Rectangle dst = { tilePosition.x,tilePosition.y, tileSizeX, tileSizeY };
-                DrawTexturePro(tex, src, dst, Vector2{ 0.5f, 0.5f }, 0, WHITE);
+                Rectangle src = { 0,0, (float)tex.width, (float)tex.height };
+                Rectangle dst = { tilePosition.x,tilePosition.y, (float)tileSizeX, (float)tileSizeY };
+                DrawTexturePro(tex, src, dst, Vector2{ 0, 0 }, 0, WHITE);
             }
         }
     }
@@ -221,23 +235,23 @@ public:
     // Lab 4 - Part 7
     bool IsTraversible(Vector2 tilePosition)
     {
-	    if (IsInsideGrid(tilePosition))
+	    if (IsInsideGrid((int)tilePosition.x, (int)tilePosition.y))
 	    {
-            if (GetTile(tilePosition.x, tilePosition.y) == Tile::Floor)
+            if (GetTile((int)tilePosition.x, (int)tilePosition.y) == Tile::Floor)
                 return true;
 	    }
         return false;
     }
-
+    
     // Lab 4 - Part 8B
     std::vector<Vector2> GetTraversibleTilesAdjacentTo(Vector2 tilePos)
     {
         std::vector<Vector2> adjacentTilePositions;
         // North, South, East, West
-        Vector2 N = tilePos + NORTH;
-        Vector2 S = tilePos + SOUTH;
-        Vector2 E = tilePos + EAST;
-        Vector2 W = tilePos + WEST;
+        Vector2 N = { tilePos.x + NORTH.x, tilePos.y + NORTH.y };
+        Vector2 S = { tilePos.x + SOUTH.x, tilePos.y + SOUTH.y };
+        Vector2 E = { tilePos.x + EAST.x, tilePos.y + EAST.y };
+        Vector2 W = { tilePos.x + WEST.x, tilePos.y + WEST.y };
 
         if (IsTraversible(N))
             adjacentTilePositions.push_back(N);
@@ -271,14 +285,23 @@ int main(void)
     rlImGuiSetup(true); // Setup GUI Init
     bool useGUI = false; // bool check to see if GUI is being used
 
+    Tilemap tilemap; // Create an instance of Tilemap
+    // Texture Pack Files obtained from https://itch.io/bundle/download/6UMZoe6qhcj3_ccsNYMxVwLmiHxAe7Fe3yOG1ve7 (Purchased)
+    // Original Texture Pack Link https://almostapixel.itch.io/small-burg-village-pack
+    // Floor and Wall assets picked and edited out from sprite sheet for texture loading
+    tilemap.LoadTextures("../game/assets/textures/Floor.png", "../game/assets/textures/Wall.png"); // Load textures
+
     while (!WindowShouldClose())
     {
         BeginDrawing();
         ClearBackground(RAYWHITE);
-        DrawText("Hello World!", 16, 9, 20, RED);
 
         float deltaTime = GetFrameTime(); // Get time in seconds for last frame drawn (delta time)
 
+        tilemap.DrawTilesTextures(); // Draw the tilemap with textures
+        tilemap.DrawBorders(); // Draw the tilemap borders
+
+        DrawText("Tilemaps!", 16, 9, 20, RED);
         DrawRectangle(970, 10, 300, 30, { 200, 150, 200, 255 });
         DrawText("Press ~ to open/close GUI", 980, 15, 20, WHITE); // GUI Instructions
 
@@ -287,20 +310,25 @@ int main(void)
             useGUI = !useGUI; // Flip trigger for GUI Render when Tilde (~) Key is pressed
         }
 
-        if (useGUI) // GUI window Open
+        if (useGUI) // GUI window Open - Always place last before EndDrawing() so it always renders above everything else and not below
         {
             rlImGuiBegin(); // Start GUI
 
-            ImGui::SliderFloat("Lab 4 Tilemap GUI", &deltaTime, 0, SCREEN_WIDTH, "%.3f", 0); // Slider for the 
+            ImGui::SliderInt("Adjust Tilemap Size X", &tilemap.tileSizeX, 1, 200, "%.0f"); // Slider for the tilemap sizeX
+            ImGui::SliderInt("Adjust Tilemap Size Y", &tilemap.tileSizeY, 1, 200, "%.0f"); // Slider for the tilemap sizeY
 
             rlImGuiEnd(); // End GUI
         }
 
-
+        std::cout << "--------------------------------------------------------" << std::endl; // Console outputs
+        std::cout << "Frame DeltaTime: " << deltaTime << std::endl; // Console output to ensure delta time is functioning correctly according to frames
+        std::cout << "TileMap Size: ( X: " << tilemap.tileSizeX << ", Y: " << tilemap.tileSizeY << ")" << std::endl; // Console output to check position of Agent Object
+        std::cout << "--------------------------------------------------------" << std::endl; // Console outputs
 
         EndDrawing();
     }
 
+    rlImGuiShutdown();
     CloseWindow();
     return 0;
 }
