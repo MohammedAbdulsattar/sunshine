@@ -30,6 +30,7 @@ public:
     Texture2D sprite; // sprite for Agent
     float maxSpeed; // maxSpeed variable
     float maxAcceleration; // MaxAcceleration variable
+    float angularSpeed; // turn rate in degrees per second
 
     void seekUpdate(float deltaTime, const Vector2& targetPosition)
 	{
@@ -117,6 +118,21 @@ float PointToLineDistance(Vector2 point, Vector2 lineStart, Vector2 lineEnd)
     return Vector2Distance(point, nearestPoint);
 }
 
+Vector2 MakeCentripedalAcceleration(Vector2 velocity, float acceleration, bool clockwise)
+{
+    float angle;
+    if (clockwise)
+    {
+        angle = 90 * RAD2DEG;
+    }
+    else
+    {
+        angle = -90 * RAD2DEG;
+    }
+    Vector2 accelerationDirection = Vector2Rotate(Vector2Normalize(velocity), angle);
+    return Vector2Scale(accelerationDirection, acceleration);
+}
+
 
 int main(void)
 {
@@ -139,7 +155,9 @@ int main(void)
     bool isMouseButtonRight = false; // keep track of the right mouse button being pressed/held
 
     float rotationAngle = 0.0f; // rotation for blue agent circle
-    float maxSpeed = 300.0f;
+    //float maxSpeed = 300.0f;
+
+    agent.angularSpeed = 90.0f; // turn rate can be changed here (in degrees)
     
     while (!WindowShouldClose())
     {
@@ -149,10 +167,10 @@ int main(void)
 
         float deltaTime = GetFrameTime(); // Get time in seconds for last frame drawn (delta time)
 
-        Vector2 agentPosition = { SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 }; // Agent starting position set to half the screen width and height
+        //Vector2 agentPosition = { SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 }; // Agent starting position set to half the screen width and height
         //Vector2 agentVelocity = { 5.0f, 5.0f }; // velocity for the agent to work with
         Vector2 mousePosition = GetMousePosition(); // get mouse position vector based on XY coordinates in screen
-        Vector2 obstaclePosition = {200, 200}; // get Stationary Obstacle vector based on XY coordinates in screen
+        Vector2 obstaclePosition = { SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 }; // get Stationary Obstacle vector based on XY coordinates in screen
 
         Vector2 direction = Vector2Subtract(mousePosition, agent.rigidBody.position); // Create a direction vector from the agent position to the obstacle position -> result = { v1.x - v2.x, v1.y - v2.y };
 
@@ -169,23 +187,29 @@ int main(void)
         //DrawCircleV(agent.rigidBody.position, 10, BLUE); // Draw the circle representing the agent
 
         float whiskerAngle = 15.0f; // Angle of the whiskers in float degrees
+        float middleWhiskerAngle = 0.0f; // middle whisker angle set to the middle of the agent in float degrees
 
         // create a vector which originates from the direction vector and is based on the whiskerAngle
         // Mathematical Formula -> cosres = cosf(angle); sinres = sinf(angle);
         // new angle vector x = (input vector x * cos angle) - (input vector y * sin angle)
         // new angle vector y = (input vector x * sin angle) + (input vector y * cos angle)
         // return the new angle vector(x,y)
-        Vector2 rightWhiskerDirection = Vector2Rotate(direction, whiskerAngle * DEG2RAD); // clockwise rotation -> result.x = v.x*cosres - v.y*sinres; result.y = v.x*sinres + v.y*cosres;
-        Vector2 leftWhiskerDirection = Vector2Rotate(direction, -whiskerAngle * DEG2RAD); // counter-clockwise rotation -> result.x = v.x*(-cosres) - v.y*(-sinres); result.y = v.x*(-sinres) + v.y*(-cosres);
+        Vector2 rightWhiskerDirection = Vector2Rotate(direction, whiskerAngle * DEG2RAD); // counter-clockwise rotation -> result.x = v.x*cosres - v.y*sinres; result.y = v.x*sinres + v.y*cosres;
+        Vector2 leftWhiskerDirection = Vector2Rotate(direction, -whiskerAngle * DEG2RAD); // clockwise rotation -> result.x = v.x*(-cosres) - v.y*(-sinres); result.y = v.x*(-sinres) + v.y*(-cosres);
+        Vector2 middleWhiskerDirection = Vector2Rotate(direction, middleWhiskerAngle * DEG2RAD); // middle randomized rotation -> result.x = v.x*(-cosres) - v.y*(-sinres); result.y = v.x*(-sinres) + v.y*(-cosres);
 
         // create a rightWhiskerEnd vector starting from the agent.rigidBody.position and extending in the Scaled Normalized rightWhiskerDirection according to the lineLength
         Vector2 rightWhiskerEnd = Vector2Add(agent.rigidBody.position, Vector2Scale(Vector2Normalize(rightWhiskerDirection), lineLength)); // Mathematical understanding -> agent.rigidBody.position + (Scale Normalize (rightWhiskerDirection * LineLength)
         // create a leftWhiskerEnd vector starting from the agent.rigidBody.position and extending in the Scaled Normalized leftWhiskerDirection according to the lineLength
         Vector2 leftWhiskerEnd = Vector2Add(agent.rigidBody.position, Vector2Scale(Vector2Normalize(leftWhiskerDirection), lineLength)); // Mathematical understanding -> agent.rigidBody.position + (Scale Normalize (leftWhiskerDirection * LineLength)
+        // create a middleWhiskerEnd vector starting from the agent.rigidBody.position and extending in the Scaled Normalized middleWhiskerDirection according to the lineLength
+        Vector2 middleWhiskerEnd = Vector2Add(agent.rigidBody.position, Vector2Scale(Vector2Normalize(middleWhiskerDirection), lineLength)); // Mathematical understanding -> agent.rigidBody.position + (Scale Normalize (middleWhiskerDirection * LineLength)
 
         DrawLineEx(agent.rigidBody.position, rightWhiskerEnd, 1.5f, BLUE);  // Draw the right whisker line vector
 
         DrawLineEx(agent.rigidBody.position, leftWhiskerEnd, 1.5f, BLUE); // Draw the left whisker line vector
+
+        DrawLineEx(agent.rigidBody.position, middleWhiskerEnd, 1.5f, BLUE); // Draw the left whisker line vector
 
         Vector2 mouseCenter = mousePosition; // mouse obstacle vector
         float mouseRadius = 10.0f; // mouse obstacle radius
@@ -200,8 +224,10 @@ int main(void)
 
         float ObstacleMouseRight = PointToLineDistance(ObstacleCenter, agent.rigidBody.position, rightWhiskerEnd);
         float ObstacleMouseLeft = PointToLineDistance(ObstacleCenter, agent.rigidBody.position, leftWhiskerEnd);
+        float ObstacleMouseMiddle = PointToLineDistance(ObstacleCenter, agent.rigidBody.position, middleWhiskerEnd);
         bool RightObstacleCollision = (ObstacleMouseRight <= ObstacleRadius);
         bool LeftObstacleCollision = (ObstacleMouseLeft <= ObstacleRadius);
+        bool MiddleObstacleCollision = (ObstacleMouseMiddle <= ObstacleRadius);
 
         // Lab 3 - Part 2
         //Vector2 nearestPoint = Vector2Add(agent.rigidBody.position, Vector2Scale(Vector2Normalize(direction), lineLength));
@@ -286,17 +312,39 @@ int main(void)
         if (RightObstacleCollision)
         {
             std::cout << "imminent collision with stationary obstacle and right whisker!" << std::endl;
-            Vector2 linearDirection = Vector2Normalize(agent.rigidBody.velocity);
-            float linearSpeed = Vector2Length(agent.rigidBody.velocity);
-            agent.rigidBody.velocity = Vector2Scale(Vector2Rotate(linearDirection, -agent.rigidBody.angularSpeed * deltaTime * DEG2RAD), linearSpeed);
+
+        	Vector2 newAcceleration = MakeCentripedalAcceleration(agent.rigidBody.velocity,agent.maxAcceleration, true); // true for clockwise
+            // apply the new clockwise acceleration to the agent's velocity
+            agent.rigidBody.velocity = Vector2Add(agent.rigidBody.velocity, Vector2Scale(newAcceleration, deltaTime));
+
+            //Vector2 linearDirection = Vector2Normalize(agent.rigidBody.velocity);
+            //float linearSpeed = Vector2Length(agent.rigidBody.velocity);
+            //agent.rigidBody.velocity = Vector2Scale(Vector2Rotate(linearDirection, -agent.rigidBody.angularSpeed * deltaTime * DEG2RAD), linearSpeed); // rotate counter clock-wise on right collision
         }
 
         if (LeftObstacleCollision)
         {
             std::cout << "imminent collision with stationary obstacle and left whisker!" << std::endl;
+
+        	Vector2 newAcceleration = MakeCentripedalAcceleration(agent.rigidBody.velocity, agent.maxAcceleration, false); // false for counter-clockwise
+            // apply the new counter-clockwise acceleration to the agent's velocity
+            agent.rigidBody.velocity = Vector2Add(agent.rigidBody.velocity, Vector2Scale(newAcceleration, deltaTime));
+
+            //Vector2 linearDirection = Vector2Normalize(agent.rigidBody.velocity);
+            //float linearSpeed = Vector2Length(agent.rigidBody.velocity);
+            //agent.rigidBody.velocity = Vector2Scale(Vector2Rotate(linearDirection, agent.rigidBody.angularSpeed * deltaTime * DEG2RAD), linearSpeed); // rotate clock-wise on left collision
+        }
+
+        if (MiddleObstacleCollision)
+        {
+            std::cout << "imminent collision with stationary obstacle and middle whisker!" << std::endl;
             Vector2 linearDirection = Vector2Normalize(agent.rigidBody.velocity);
             float linearSpeed = Vector2Length(agent.rigidBody.velocity);
-            agent.rigidBody.velocity = Vector2Scale(Vector2Rotate(linearDirection, -agent.rigidBody.angularSpeed * deltaTime * DEG2RAD), linearSpeed);
+
+            // Randomly choose a direction to turn (clockwise or counter-clockwise)
+            float randomDirection = (rand() % 2 == 0) ? 1.0f : -1.0f;
+
+            agent.rigidBody.velocity = Vector2Scale(Vector2Rotate(linearDirection, randomDirection * agent.rigidBody.angularSpeed * deltaTime * DEG2RAD), linearSpeed);
         }
 
         DrawRectangle(970, 10, 300, 30, { 200, 150, 200, 255 });
@@ -311,19 +359,20 @@ int main(void)
         {
             rlImGuiBegin(); // Start GUI
 
-            ImGui::SliderFloat("Position X", &agent.rigidBody.position.x, 0, SCREEN_WIDTH, "%.3f", 0); // Slider for the X position of the Object(s)
-            ImGui::SliderFloat("Position Y", &agent.rigidBody.position.y, 0, SCREEN_HEIGHT, "%.3f", 0); // Slider for the Y position of the Object(s)
-            ImGui::SliderFloat("Velocity X", &agent.rigidBody.velocity.x, -agent.maxSpeed, agent.maxSpeed, "%.3f", 0); // Slider for the X Velocity of the Object(s)
-            ImGui::SliderFloat("Velocity Y", &agent.rigidBody.velocity.y, -agent.maxSpeed, agent.maxSpeed, "%.3f", 0); // Slider for the Y Velocity of the Object(s)
-            ImGui::SliderFloat("Max Speed", &agent.maxSpeed, 0.0f, 1000.0f, "%.3f", 0); // Slider for the maxSpeed of the Object(s)
-            ImGui::SliderFloat("Max Acceleration", &agent.maxAcceleration, 0.0f, 1000.0f, "%.3f", 0); // Slider for the maxAcceleration of the Objects(s) - how fast the object(s) can reach the maxSpeed
-
+            ImGui::SliderFloat("Agent Position X", &agent.rigidBody.position.x, 0, SCREEN_WIDTH, "%.3f", 0); // Slider for the X position of the Object(s)
+            ImGui::SliderFloat("Agent Position Y", &agent.rigidBody.position.y, 0, SCREEN_HEIGHT, "%.3f", 0); // Slider for the Y position of the Object(s)
+            ImGui::SliderFloat("Agent Velocity X", &agent.rigidBody.velocity.x, -agent.maxSpeed, agent.maxSpeed, "%.3f", 0); // Slider for the X Current Velocity of the Object(s)
+            ImGui::SliderFloat("Agent Velocity Y", &agent.rigidBody.velocity.y, -agent.maxSpeed, agent.maxSpeed, "%.3f", 0); // Slider for the Y Current Velocity of the Object(s)
+            ImGui::SliderFloat("Agent Max Speed", &agent.maxSpeed, 0.0f, 1000.0f, "%.3f", 0); // Slider for the maxSpeed of the Object(s)
+            ImGui::SliderFloat("Agent Max Acceleration", &agent.maxAcceleration, 0.0f, 1000.0f, "%.3f", 0); // Slider for the maxAcceleration of the Objects(s) - how fast the object(s) can reach the maxSpeed
         	ImGui::SliderFloat("Right Whisker X", &rightWhiskerEnd.x, 0, SCREEN_WIDTH, "%.3f", 0); // Slider for the X position of the Object(s)
             ImGui::SliderFloat("Right Whisker Y", &rightWhiskerEnd.y, 0, SCREEN_HEIGHT, "%.3f", 0); // Slider for the Y position of the Object(s)
+            ImGui::SliderFloat("Middle Whisker X", &middleWhiskerEnd.x, 0, SCREEN_WIDTH, "%.3f", 0); // Slider for the X position of the Object(s)
+            ImGui::SliderFloat("Middle Whisker Y", &middleWhiskerEnd.y, 0, SCREEN_HEIGHT, "%.3f", 0); // Slider for the Y position of the Object(s)
             ImGui::SliderFloat("Left Whisker X", &leftWhiskerEnd.x, 0, SCREEN_WIDTH, "%.3f", 0); // Slider for the X position of the Object(s)
             ImGui::SliderFloat("Left Whisker Y", &leftWhiskerEnd.y, 0, SCREEN_HEIGHT, "%.3f", 0); // Slider for the Y position of the Object(s)
-            ImGui::SliderFloat("Angular Velocity X", &agentVelocity.x, -maxSpeed, maxSpeed, "%.3f", 0); // Slider for the X Velocity of the Object(s)
-            ImGui::SliderFloat("Angular Velocity Y", &agentVelocity.y, -maxSpeed, maxSpeed, "%.3f", 0); // Slider for the Y Velocity of the Object(s)
+            ImGui::SliderFloat("Vector Velocity X", &agentVelocity.x, -agent.maxSpeed, agent.maxSpeed, "%.3f", 0); // Slider for the X Vector Velocity of the Object(s)
+            ImGui::SliderFloat("Vector Velocity Y", &agentVelocity.y, -agent.maxSpeed, agent.maxSpeed, "%.3f", 0); // Slider for the Y Vector Velocity of the Object(s)
 
             rlImGuiEnd(); // End GUI
         }
