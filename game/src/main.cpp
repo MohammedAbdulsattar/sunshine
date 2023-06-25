@@ -88,6 +88,9 @@ public:
         else if (rigidBody.position.y < 0) // if the Y position exceeds the minimum HEIGHT
             rigidBody.position.y = SCREEN_HEIGHT; // Wrap around to other side of the height starting at Maximum HEIGHT
     }
+
+    // Lab 3 - Homework Part 1
+    void HandleDynamicObstacleCollisions(Agent& agent, const std::vector<Vector2>& obstacleContainer, const std::vector<float>& obstacleContainerRadii, float deltaTime);
 };
 
 // Function to calculate the perpendicular distance between a point and a line
@@ -118,6 +121,7 @@ float PointToLineDistance(Vector2 point, Vector2 lineStart, Vector2 lineEnd)
     return Vector2Distance(point, nearestPoint);
 }
 
+// Function for create the angular turn rate to go around an obstacle instead of bounce away from it or go through it 
 Vector2 MakeCentripedalAcceleration(Vector2 velocity, float acceleration, bool clockwise)
 {
     float angle;
@@ -131,6 +135,130 @@ Vector2 MakeCentripedalAcceleration(Vector2 velocity, float acceleration, bool c
     }
     Vector2 accelerationDirection = Vector2Rotate(Vector2Normalize(velocity), angle);
     return Vector2Scale(accelerationDirection, acceleration);
+}
+
+// Lab 3 - Part 1
+void Agent::HandleDynamicObstacleCollisions(Agent& agent, const std::vector<Vector2>& obstacleContainer, const std::vector<float>& obstacleContainerRadii, float deltaTime)
+{
+    for (size_t i = 0; i < obstacleContainer.size(); ++i) // iterate through the entire container size of vector 2D obstacle objects (each with an accompanying radius)
+    {
+        Vector2 obstacleCenter = obstacleContainer[i]; // vector 2D container to hold each obstacle element XY position
+        float obstacleRadius = obstacleContainerRadii[i]; // vector container to hold each obstacle radius attached to that obstacle
+
+        Vector2 mousePosition = GetMousePosition(); // get the mouse position
+
+        float lineLength = 100.0f; // Length of the whisker line
+
+        Vector2 direction = Vector2Subtract(mousePosition, agent.rigidBody.position); // Create a direction vector from the agent position to the obstacle position -> result = { v1.x - v2.x, v1.y - v2.y };
+
+        float whiskerAngle = 15.0f; // Angle of the whiskers in float degrees
+        float secondWhiskerAngle = 45.0f; // Angle of the secondary whiskers in float degrees
+        float middleWhiskerAngle = 0.0f; // middle whisker angle set to the middle of the agent in float degrees
+
+        // create a vector which originates from the direction vector and is based on the whiskerAngle
+        // Mathematical Formula -> cosres = cosf(angle); sinres = sinf(angle);
+        // new angle vector x = (input vector x * cos angle) - (input vector y * sin angle)
+        // new angle vector y = (input vector x * sin angle) + (input vector y * cos angle)
+        // return the new angle vector(x,y)
+        Vector2 rightWhiskerDirection = Vector2Rotate(direction, whiskerAngle * DEG2RAD); // counter-clockwise rotation -> result.x = v.x*cosres - v.y*sinres; result.y = v.x*sinres + v.y*cosres;
+        Vector2 leftWhiskerDirection = Vector2Rotate(direction, -whiskerAngle * DEG2RAD); // clockwise rotation -> result.x = v.x*(-cosres) - v.y*(-sinres); result.y = v.x*(-sinres) + v.y*(-cosres);
+        Vector2 middleWhiskerDirection = Vector2Rotate(direction, middleWhiskerAngle * DEG2RAD); // middle randomized rotation -> result.x = v.x*(-cosres) - v.y*(-sinres); result.y = v.x*(-sinres) + v.y*(-cosres);
+
+        // Lab 3 - Homework Part 2
+        Vector2 secondRightWhiskerDirection = Vector2Rotate(direction, secondWhiskerAngle * DEG2RAD); // counter-clockwise rotation -> result.x = v.x*cosres - v.y*sinres; result.y = v.x*sinres + v.y*cosres;
+        Vector2 secondLeftWhiskerDirection = Vector2Rotate(direction, -secondWhiskerAngle * DEG2RAD); // clockwise rotation -> result.x = v.x*(-cosres) - v.y*(-sinres); result.y = v.x*(-sinres) + v.y*(-cosres);
+
+        // create a rightWhiskerEnd vector starting from the agent.rigidBody.position and extending in the Scaled Normalized rightWhiskerDirection according to the lineLength
+        Vector2 rightWhiskerEnd = Vector2Add(agent.rigidBody.position, Vector2Scale(Vector2Normalize(rightWhiskerDirection), lineLength)); // Mathematical understanding -> agent.rigidBody.position + (Scale Normalize (rightWhiskerDirection * LineLength)
+        // create a leftWhiskerEnd vector starting from the agent.rigidBody.position and extending in the Scaled Normalized leftWhiskerDirection according to the lineLength
+        Vector2 leftWhiskerEnd = Vector2Add(agent.rigidBody.position, Vector2Scale(Vector2Normalize(leftWhiskerDirection), lineLength)); // Mathematical understanding -> agent.rigidBody.position + (Scale Normalize (leftWhiskerDirection * LineLength)
+        // create a middleWhiskerEnd vector starting from the agent.rigidBody.position and extending in the Scaled Normalized middleWhiskerDirection according to the lineLength
+        Vector2 middleWhiskerEnd = Vector2Add(agent.rigidBody.position, Vector2Scale(Vector2Normalize(middleWhiskerDirection), lineLength)); // Mathematical understanding -> agent.rigidBody.position + (Scale Normalize (middleWhiskerDirection * LineLength)
+
+        // Lab 3 - Homework Part 2
+        // create another RightWhiskerEnd vector starting from the agent.rigidBody.position and extending in the Scaled Normalized RightWhiskerEnd according to the lineLength
+        Vector2 secondRightWhiskerEnd = Vector2Add(agent.rigidBody.position, Vector2Scale(Vector2Normalize(secondRightWhiskerDirection), lineLength)); // Mathematical understanding -> agent.rigidBody.position + (Scale Normalize (middleWhiskerDirection * LineLength)
+        // create another LeftWhiskerEnd vector starting from the agent.rigidBody.position and extending in the Scaled Normalized LeftWhiskerEnd according to the lineLength
+        Vector2 secondLeftWhiskerEnd = Vector2Add(agent.rigidBody.position, Vector2Scale(Vector2Normalize(secondLeftWhiskerDirection), lineLength)); // Mathematical understanding -> agent.rigidBody.position + (Scale Normalize (middleWhiskerDirection * LineLength)
+
+        // Calculate the distances from the obstacle to each whisker
+        float distToRightWhisker = PointToLineDistance(obstacleCenter, agent.rigidBody.position, rightWhiskerEnd);
+        float distToLeftWhisker = PointToLineDistance(obstacleCenter, agent.rigidBody.position, leftWhiskerEnd);
+        float distToMiddleWhisker = PointToLineDistance(obstacleCenter, agent.rigidBody.position, middleWhiskerEnd);
+        float distToSecondRightWhisker = PointToLineDistance(obstacleCenter, agent.rigidBody.position, secondRightWhiskerEnd);
+        float distToSecondLeftWhisker = PointToLineDistance(obstacleCenter, agent.rigidBody.position, secondLeftWhiskerEnd);
+
+        // Check if the obstacle is colliding with any whisker
+        bool isCollidingWithRightWhisker = (distToRightWhisker <= obstacleRadius);
+        bool isCollidingWithLeftWhisker = (distToLeftWhisker <= obstacleRadius);
+        bool isCollidingWithMiddleWhisker = (distToMiddleWhisker <= obstacleRadius);
+        bool isCollidingWithSecondRightWhisker = (distToSecondRightWhisker <= obstacleRadius);
+        bool isCollidingWithSecondLeftWhisker = (distToSecondLeftWhisker <= obstacleRadius);
+
+        // Handle collision with right-sided whisker
+        if (isCollidingWithRightWhisker) 
+        {
+            std::cout << "Imminent collision with dynamic obstacle at position: ( X: " << obstacleCenter.x << ", Y: " << obstacleCenter.y << ") with Right Whisker!" << std::endl;
+
+            Vector2 newAcceleration = MakeCentripedalAcceleration(agent.rigidBody.velocity, agent.maxAcceleration, true); // true for clockwise
+            // Apply the new clockwise acceleration to the agent's velocity
+            agent.rigidBody.velocity = Vector2Add(agent.rigidBody.velocity, Vector2Scale(newAcceleration, deltaTime));
+        }
+
+        // Handle collision with left-sided whisker
+        if (isCollidingWithLeftWhisker)
+        {
+            std::cout << "Imminent collision with dynamic obstacle at position: ( X: " << obstacleCenter.x << ", Y: " << obstacleCenter.y << ") with Left Whisker!" << std::endl;
+
+            Vector2 newAcceleration = MakeCentripedalAcceleration(agent.rigidBody.velocity, agent.maxAcceleration, false); // false for counter-clockwise
+            // Apply the new clockwise acceleration to the agent's velocity
+            agent.rigidBody.velocity = Vector2Add(agent.rigidBody.velocity, Vector2Scale(newAcceleration, deltaTime));
+        }
+
+        // Handle collision with middle whisker - special case forcibly bounces the agent back away from direction contact with an obstacle
+        if (isCollidingWithMiddleWhisker)
+        {
+            std::cout << "Imminent collision with dynamic obstacle at position: ( X: " << obstacleCenter.x << ", Y: " << obstacleCenter.y << ") with Middle Whisker!" << std::endl;
+
+            Vector2 linearDirection = Vector2Normalize(agent.rigidBody.velocity);
+            float linearSpeed = Vector2Length(agent.rigidBody.velocity);
+
+            // Randomly choose a direction to turn (clockwise or counter-clockwise)
+            float randomDirection = (rand() % 2 == 0) ? 1.0f : -1.0f;
+
+            agent.rigidBody.velocity = Vector2Scale(Vector2Rotate(linearDirection, randomDirection * agent.rigidBody.angularSpeed * deltaTime * DEG2RAD), linearSpeed); // bounce back the agent and apply randomDirection turn picked
+        }
+
+        // Handle collision with secondary right-sided whisker
+        if (isCollidingWithSecondRightWhisker)
+        {
+            std::cout << "Imminent collision with dynamic obstacle at position: ( X: " << obstacleCenter.x << ", Y: " << obstacleCenter.y << ") with Far Right Whisker!" << std::endl;
+
+            Vector2 newAcceleration = MakeCentripedalAcceleration(agent.rigidBody.velocity, agent.maxAcceleration, true); // true for clockwise
+            // Apply the new clockwise acceleration to the agent's velocity
+            agent.rigidBody.velocity = Vector2Add(agent.rigidBody.velocity, Vector2Scale(newAcceleration, deltaTime));
+        }
+
+        // Handle collision with secondary left-sided whisker
+        if (isCollidingWithSecondLeftWhisker)
+        {
+            std::cout << "Imminent collision with dynamic obstacle at position: ( X: " << obstacleCenter.x << ", Y: " << obstacleCenter.y << ") with Far Left Whisker!" << std::endl;
+
+            Vector2 newAcceleration = MakeCentripedalAcceleration(agent.rigidBody.velocity, agent.maxAcceleration, false); // false for counter-clockwise
+            // Apply the new clockwise acceleration to the agent's velocity
+            agent.rigidBody.velocity = Vector2Add(agent.rigidBody.velocity, Vector2Scale(newAcceleration, deltaTime));
+        }
+
+        DrawLineEx(agent.rigidBody.position, rightWhiskerEnd, 1.5f, BLUE);  // Draw the right whisker line vector
+
+        DrawLineEx(agent.rigidBody.position, leftWhiskerEnd, 1.5f, BLUE); // Draw the left whisker line vector
+
+        DrawLineEx(agent.rigidBody.position, middleWhiskerEnd, 1.5f, BLUE); // Draw the middle whisker line vector
+
+        // Lab 3 - Homework Part 2
+        DrawLineEx(agent.rigidBody.position, secondRightWhiskerEnd, 1.5f, BLUE); // Draw the far right whisker line vector
+        DrawLineEx(agent.rigidBody.position, secondLeftWhiskerEnd, 1.5f, BLUE); // Draw the far left whisker line vector
+    }
 }
 
 
@@ -158,6 +286,9 @@ int main(void)
     //float maxSpeed = 300.0f;
 
     agent.angularSpeed = 90.0f; // turn rate can be changed here (in degrees)
+
+    std::vector<Vector2> obstacleContainer;
+    std::vector<float> obstacleContainerRadii;
     
     while (!WindowShouldClose())
     {
@@ -187,6 +318,7 @@ int main(void)
         //DrawCircleV(agent.rigidBody.position, 10, BLUE); // Draw the circle representing the agent
 
         float whiskerAngle = 15.0f; // Angle of the whiskers in float degrees
+        float secondWhiskerAngle = 45.0f; // Angle of the secondary whiskers in float degrees
         float middleWhiskerAngle = 0.0f; // middle whisker angle set to the middle of the agent in float degrees
 
         // create a vector which originates from the direction vector and is based on the whiskerAngle
@@ -198,6 +330,10 @@ int main(void)
         Vector2 leftWhiskerDirection = Vector2Rotate(direction, -whiskerAngle * DEG2RAD); // clockwise rotation -> result.x = v.x*(-cosres) - v.y*(-sinres); result.y = v.x*(-sinres) + v.y*(-cosres);
         Vector2 middleWhiskerDirection = Vector2Rotate(direction, middleWhiskerAngle * DEG2RAD); // middle randomized rotation -> result.x = v.x*(-cosres) - v.y*(-sinres); result.y = v.x*(-sinres) + v.y*(-cosres);
 
+        // Lab 3 - Homework Part 2
+        Vector2 secondRightWhiskerDirection = Vector2Rotate(direction, secondWhiskerAngle * DEG2RAD); // counter-clockwise rotation -> result.x = v.x*cosres - v.y*sinres; result.y = v.x*sinres + v.y*cosres;
+        Vector2 secondLeftWhiskerDirection = Vector2Rotate(direction, -secondWhiskerAngle * DEG2RAD); // clockwise rotation -> result.x = v.x*(-cosres) - v.y*(-sinres); result.y = v.x*(-sinres) + v.y*(-cosres);
+
         // create a rightWhiskerEnd vector starting from the agent.rigidBody.position and extending in the Scaled Normalized rightWhiskerDirection according to the lineLength
         Vector2 rightWhiskerEnd = Vector2Add(agent.rigidBody.position, Vector2Scale(Vector2Normalize(rightWhiskerDirection), lineLength)); // Mathematical understanding -> agent.rigidBody.position + (Scale Normalize (rightWhiskerDirection * LineLength)
         // create a leftWhiskerEnd vector starting from the agent.rigidBody.position and extending in the Scaled Normalized leftWhiskerDirection according to the lineLength
@@ -205,11 +341,21 @@ int main(void)
         // create a middleWhiskerEnd vector starting from the agent.rigidBody.position and extending in the Scaled Normalized middleWhiskerDirection according to the lineLength
         Vector2 middleWhiskerEnd = Vector2Add(agent.rigidBody.position, Vector2Scale(Vector2Normalize(middleWhiskerDirection), lineLength)); // Mathematical understanding -> agent.rigidBody.position + (Scale Normalize (middleWhiskerDirection * LineLength)
 
+        // Lab 3 - Homework Part 2
+        // create another RightWhiskerEnd vector starting from the agent.rigidBody.position and extending in the Scaled Normalized RightWhiskerEnd according to the lineLength
+        Vector2 secondRightWhiskerEnd = Vector2Add(agent.rigidBody.position, Vector2Scale(Vector2Normalize(secondRightWhiskerDirection), lineLength)); // Mathematical understanding -> agent.rigidBody.position + (Scale Normalize (middleWhiskerDirection * LineLength)
+        // create another LeftWhiskerEnd vector starting from the agent.rigidBody.position and extending in the Scaled Normalized LeftWhiskerEnd according to the lineLength
+        Vector2 secondLeftWhiskerEnd = Vector2Add(agent.rigidBody.position, Vector2Scale(Vector2Normalize(secondLeftWhiskerDirection), lineLength)); // Mathematical understanding -> agent.rigidBody.position + (Scale Normalize (middleWhiskerDirection * LineLength)
+
         DrawLineEx(agent.rigidBody.position, rightWhiskerEnd, 1.5f, BLUE);  // Draw the right whisker line vector
 
         DrawLineEx(agent.rigidBody.position, leftWhiskerEnd, 1.5f, BLUE); // Draw the left whisker line vector
 
-        DrawLineEx(agent.rigidBody.position, middleWhiskerEnd, 1.5f, BLUE); // Draw the left whisker line vector
+        DrawLineEx(agent.rigidBody.position, middleWhiskerEnd, 1.5f, BLUE); // Draw the middle whisker line vector
+
+        // Lab 3 - Homework Part 2
+        DrawLineEx(agent.rigidBody.position, secondRightWhiskerEnd, 1.5f, BLUE); // Draw the far right whisker line vector
+        DrawLineEx(agent.rigidBody.position, secondLeftWhiskerEnd, 1.5f, BLUE); // Draw the far left whisker line vector
 
         Vector2 mouseCenter = mousePosition; // mouse obstacle vector
         float mouseRadius = 10.0f; // mouse obstacle radius
@@ -228,6 +374,12 @@ int main(void)
         bool RightObstacleCollision = (ObstacleMouseRight <= ObstacleRadius);
         bool LeftObstacleCollision = (ObstacleMouseLeft <= ObstacleRadius);
         bool MiddleObstacleCollision = (ObstacleMouseMiddle <= ObstacleRadius);
+
+        // Lab 3 - Homework Part 2
+        float ObstacleMouseFarRight = PointToLineDistance(ObstacleCenter, agent.rigidBody.position, secondRightWhiskerEnd);
+        float ObstacleMouseFarLeft = PointToLineDistance(ObstacleCenter, agent.rigidBody.position, secondLeftWhiskerEnd);
+        bool FarRightObstacleCollision = (ObstacleMouseFarRight <= ObstacleRadius);
+        bool FarLeftObstacleCollision = (ObstacleMouseFarLeft <= ObstacleRadius);
 
         // Lab 3 - Part 2
         //Vector2 nearestPoint = Vector2Add(agent.rigidBody.position, Vector2Scale(Vector2Normalize(direction), lineLength));
@@ -261,6 +413,23 @@ int main(void)
         {
             isMouseButtonRight = false;
         }
+
+        // Lab 3 - Homework Part 3
+        if (IsKeyPressed(KEY_B))
+        {
+            mousePosition = GetMousePosition(); // get mouse position
+
+            obstacleContainer.push_back(mousePosition); // Place the obstacle on current mouse XY position
+            obstacleContainerRadii.push_back(15.0f); // Give the obstacle a radius at the position it is placed
+            std::cout << "Obstacle Created and Rendered at Position: ( X: " << mousePosition.x << ", Y: " << mousePosition.y << ")" << std::endl; // Console output to check position of obstacles being placed
+        }
+        
+        for (size_t i = 0; i < obstacleContainer.size(); ++i) // Rendering the obstacles based on the obstacleContainer size
+        {
+            DrawCircleV(obstacleContainer[i], obstacleContainerRadii[i], RED); // Draw out each obstacle with the provided Radius
+        }
+
+        agent.HandleDynamicObstacleCollisions(agent, obstacleContainer, obstacleContainerRadii, deltaTime);
 
         if (isMouseButtonLeft)
         {
@@ -344,8 +513,37 @@ int main(void)
             // Randomly choose a direction to turn (clockwise or counter-clockwise)
             float randomDirection = (rand() % 2 == 0) ? 1.0f : -1.0f;
 
-            agent.rigidBody.velocity = Vector2Scale(Vector2Rotate(linearDirection, randomDirection * agent.rigidBody.angularSpeed * deltaTime * DEG2RAD), linearSpeed);
+            agent.rigidBody.velocity = Vector2Scale(Vector2Rotate(linearDirection, randomDirection * agent.rigidBody.angularSpeed * deltaTime * DEG2RAD), linearSpeed); // bounce back the agent and apply randomDirection turn picked
         }
+
+        if (FarRightObstacleCollision)
+        {
+            std::cout << "imminent collision with stationary obstacle and far right whisker!" << std::endl;
+
+            Vector2 newAcceleration = MakeCentripedalAcceleration(agent.rigidBody.velocity, agent.maxAcceleration, true); // true for clockwise
+            // apply the new clockwise acceleration to the agent's velocity
+            agent.rigidBody.velocity = Vector2Add(agent.rigidBody.velocity, Vector2Scale(newAcceleration, deltaTime));
+
+            //Vector2 linearDirection = Vector2Normalize(agent.rigidBody.velocity);
+            //float linearSpeed = Vector2Length(agent.rigidBody.velocity);
+            //agent.rigidBody.velocity = Vector2Scale(Vector2Rotate(linearDirection, -agent.rigidBody.angularSpeed * deltaTime * DEG2RAD), linearSpeed); // rotate counter clock-wise on right collision
+        }
+
+        if (FarLeftObstacleCollision)
+        {
+            std::cout << "imminent collision with stationary obstacle and far left whisker!" << std::endl;
+
+            Vector2 newAcceleration = MakeCentripedalAcceleration(agent.rigidBody.velocity, agent.maxAcceleration, false); // false for counter-clockwise
+            // apply the new counter-clockwise acceleration to the agent's velocity
+            agent.rigidBody.velocity = Vector2Add(agent.rigidBody.velocity, Vector2Scale(newAcceleration, deltaTime));
+
+            //Vector2 linearDirection = Vector2Normalize(agent.rigidBody.velocity);
+            //float linearSpeed = Vector2Length(agent.rigidBody.velocity);
+            //agent.rigidBody.velocity = Vector2Scale(Vector2Rotate(linearDirection, agent.rigidBody.angularSpeed * deltaTime * DEG2RAD), linearSpeed); // rotate clock-wise on left collision
+        }
+
+        DrawRectangle(270, 10, 575, 30, { 200, 150, 200, 255 });
+        DrawText("Press B to Place Obstacles at current mouse position", 280, 15, 20, WHITE); // Obstacle Instructions
 
         DrawRectangle(970, 10, 300, 30, { 200, 150, 200, 255 });
         DrawText("Press ~ to open/close GUI", 980, 15, 20, WHITE); // GUI Instructions
