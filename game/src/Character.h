@@ -14,16 +14,9 @@ public:
     Texture2D sprite; // Texture to hold character sprite
     Vector2 position; // position vector for the character
 
-    Character(const char* texturePath, Vector2 startPos)
-    {
-        sprite = LoadTexture(texturePath); // load texture using the provided texture path
-        position = startPos; // set the position for character according to current position
-    }
+    Character(const char* texturePath, Vector2 startPos);
 
-    void Draw()
-    {
-        DrawTextureEx(sprite, position, 0.0f, 3.0f, WHITE); // render out the character sprite at the current position
-    }
+    void Draw();
 };
 
 #endif // CHARACTER_H

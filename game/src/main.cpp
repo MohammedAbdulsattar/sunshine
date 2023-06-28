@@ -30,7 +30,7 @@ int main(void)
     // Player asset picked and edited out from sprite sheet for texture loading
     Character player("../game/assets/textures/Player.png", Vector2{ 0, 0 }); // Load the player texture from file and give it a starting XY position vector
 
-    int numberOfWalls = tilemap.RegenerateLevel(); // Initial population of floors and walls (needs to be done beforehand to ensure proper memory initialization and avoid illegal memory access)
+    int numberOfWalls = tilemap.RegenerateLevel(0.15); // Initial population of floors and walls (needs to be done beforehand to ensure proper memory initialization and avoid illegal memory access)
 
     while (!WindowShouldClose())
     {
@@ -41,7 +41,7 @@ int main(void)
 
         tilemap.DrawTilesTextures(); // Draw the tilemap with textures
         tilemap.DrawAdjacency(); // Draw the tilemap adjacencies for floor tiles
-        tilemap.DrawBorders(); // Draw the tilemap borders
+        tilemap.DrawBorders({ BLACK }); // Draw the tilemap borders
         player.Draw(); // Draw the player character
 
         float moveAmount = 1.0f;
@@ -84,8 +84,8 @@ int main(void)
 
         if (IsKeyPressed(KEY_R)) // Replace 'KEY_R' with the key you want to use
         {
-            numberOfWalls = tilemap.RegenerateLevel(); // Regenerate level on key press - creating new randomly placed floors and walls based on the randomizer of the walls in RegenerateLevel()
-            tilemap.DrawBorders(); // Draw the tilemap borders
+            numberOfWalls = tilemap.RegenerateLevel(0.15); // Regenerate level on key press - creating new randomly placed floors and walls based on the randomizer of the walls in RegenerateLevel()
+            tilemap.DrawBorders({ BLACK }); // Draw the tilemap borders
         }
 
         DrawText("Tilemaps!", 16, 9, 20, RED);
