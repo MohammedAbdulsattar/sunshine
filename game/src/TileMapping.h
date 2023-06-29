@@ -75,6 +75,9 @@ public:
     // Lab 4 - Homework Part 2
     bool CanMove(Tilemap tilemap, Vector2 newPos, const Character& player); // accept a tilemap, vector position, and player character object
 
+	// Lab 5 - Part 4
+    std::vector<Vector2> GetAllTraversableTiles(); // Return a vector container of all XY traversable Tile positions available in current map
+
 private:
     Tile tiles[MAP_WIDTH][MAP_HEIGHT]; // create tiles based on the map width and height
 

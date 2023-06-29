@@ -208,3 +208,22 @@ bool Tilemap::CanMove(Tilemap tilemap, Vector2 newPos, const Character& player)
         tilemap.IsTraversable(Vector2{ (float)coordsBottomLeft.x, (float)coordsBottomLeft.y }) &&
         tilemap.IsTraversable(Vector2{ (float)coordsBottomRight.x, (float)coordsBottomRight.y });
 }
+
+// Lab 5 - Part 4
+std::vector<Vector2> Tilemap::GetAllTraversableTiles() // Return a vector container of all XY traversable Tile positions available in current map
+{
+    std::vector<Vector2> traversableTiles; // create a vector container of XY vectors to store the positions of all traversable tiles
+
+    for (int x = 0; x < GetGridWidth(); x++) // go across the width of grid (columns)
+    {
+        for (int y = 0; y < GetGridHeight(); y++) // go down the height of grid (rows)
+        {
+            Vector2 tilePosition = { static_cast<float>(x), static_cast<float>(y) }; // create a temporary vector to represent the XY position of the current tile
+            if (IsTraversable(tilePosition)) // if the tile at this current tile XY position is traversable
+            {
+                traversableTiles.push_back(tilePosition); // add this position to the vector container list of traversable XY position tiles
+            }
+        }
+    }
+    return traversableTiles; // return the vector container list of traversable tiles
+}

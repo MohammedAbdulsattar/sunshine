@@ -13,6 +13,18 @@ Vector2 TileCoordinates::toVec2() const
     return Vector2{ (float)x, (float)y };
 }
 
+// Lab 5 - Part 3
+void TileCoordinates::operator +=(const TileCoordinates& r) // new operator function for +=
+{
+	x += r.x;
+	y += r.y;
+}
+void TileCoordinates::operator -=(const TileCoordinates& r) // new operator function for -=
+{
+	x -= r.x;
+	y -= r.y;
+}
+
 bool operator!=(const TileCoordinates& l, const TileCoordinates& r)
 {
     return l.x != r.x || l.y != r.y;
