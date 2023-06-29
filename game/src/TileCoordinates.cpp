@@ -15,7 +15,7 @@ Vector2 TileCoordinates::toVec2() const
 
 bool operator!=(const TileCoordinates& l, const TileCoordinates& r)
 {
-    return l.x != r.x && l.y != r.y;
+    return l.x != r.x || l.y != r.y;
 }
 
 bool operator==(const TileCoordinates& l, const TileCoordinates& r)

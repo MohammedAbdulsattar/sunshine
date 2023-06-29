@@ -5,13 +5,13 @@
 //#include "Math.h"
 #include <vector>
 
-//#include "TileCoordinates.h"
-#include "TileMapping.h"
-#include "Character.h"
+#include "Character.h" // Including character stuff
+//#include "TileCoordinates.h" // not necessary as it is already being used through TileMapping but written and commented anyways
+#include "TileMapping.h" // Including TileMapping and TileCoordinates stuff
+#include "PathFinder.h" // Including PathFinder stuff
 
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
-
 
 int main(void)
 {

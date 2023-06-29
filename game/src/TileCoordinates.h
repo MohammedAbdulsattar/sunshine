@@ -35,4 +35,18 @@ TileCoordinates operator-(const TileCoordinates& l, const TileCoordinates& r);
 TileCoordinates operator*(const TileCoordinates& l, const TileCoordinates& r);
 TileCoordinates operator/(const TileCoordinates& l, const TileCoordinates& r);
 
+template <> struct std::hash<TileCoordinates>
+{
+	size_t operator() (const TileCoordinates& pos) const // Hash function which produces a unique number (hash) for each unique TileCoordinate
+	{
+        const static long int halfWidth = sqrt(numeric_limits<int>::max());
+        const static long int width = halfWidth * 2;
+        long long int x = pos.x;
+        long long int y = pos.y;
+        size_t hash = ((y + halfWidth) * width) + (x + halfWidth);
+        //size_t hash = ((x + y) * (x + y + 1) / 2) + y;
+        return hash;
+	}
+};
+
 #endif // TILE_COORDINATES_H
