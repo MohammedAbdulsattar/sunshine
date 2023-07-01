@@ -38,6 +38,15 @@ public:
 	bool IsSolved() const;
 	bool IsCompleted();
 
+	// Lab 5 - Part 7
+	void MoveToVisitedSet(TileCoordinates node);
+	void ProcessNextIterationFunctional();
+	bool SolvePath();
+
+	// Lab 5 - Part 8
+	float GetTotalCostToReach(TileCoordinates pos);
+	void SetCostToReach(TileCoordinates pos, float newCost);
+
 private:
 	// Maps with TileCoordinates as Keys and Costs as Values. So each unique adjacent stores a value in the map, the cost of the tile {0,2} in the unvisited set is unvisited [{0,2}]
 	// Unvisited set stores nodes that have been discovered but not visited directly.

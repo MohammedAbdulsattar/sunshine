@@ -20,6 +20,9 @@ const Vector2 SOUTH = { 1, 0 }; // south direction vector
 const Vector2 EAST = { 0, 1 }; // east direction vector
 const Vector2 WEST = { 0, -1 }; // west direction vector
 
+// Lab 5 - Part 8
+const int HIGH_COST = 1000000; // High cost representing an obstacle or not traversable tile.
+
 // Lab 4 - Part 1 to Part 4
 class Tilemap
 {
@@ -67,7 +70,7 @@ public:
     bool IsTraversable(Vector2 tilePosition); // check if the current tile XY position is inside the grid and traversable
 
     // Lab 4 - Part 8B
-    std::vector<Vector2> GetTraversibleTilesAdjacentTo(Vector2 tilePos); // Dijkstra Algorithm & A* for a list of Nodes (vertexes) connected to a given node
+    std::vector<Vector2> GetTraversibleTilesAdjacentTo(TileCoordinates tilePos); // Dijkstra Algorithm & A* for a list of Nodes (vertexes) connected to a given node
 
     // Lab 4 - Homework Part 1
     void DrawAdjacency();
@@ -77,6 +80,9 @@ public:
 
 	// Lab 5 - Part 4
     std::vector<Vector2> GetAllTraversableTiles(); // Return a vector container of all XY traversable Tile positions available in current map
+
+    // Lab 5 - Part 8
+    int GetCostForTile(Vector2 tilePosition);
 
 private:
     Tile tiles[MAP_WIDTH][MAP_HEIGHT]; // create tiles based on the map width and height

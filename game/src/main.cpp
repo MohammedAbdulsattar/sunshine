@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "Character.h" // Including character stuff
-//#include "TileCoordinates.h" // not necessary as it is already being used through TileMapping but written and commented anyways
+#include "TileCoordinates.h" // not necessary as it is already being used through TileMapping but written and commented anyways
 #include "TileMapping.h" // Including TileMapping and TileCoordinates stuff
 #include "PathFinder.h" // Including PathFinder stuff
 
@@ -31,6 +31,9 @@ int main(void)
     Character player("../game/assets/textures/Player.png", Vector2{ 0, 0 }); // Load the player texture from file and give it a starting XY position vector
 
     int numberOfWalls = tilemap.RegenerateLevel(0.15); // Initial population of floors and walls (needs to be done beforehand to ensure proper memory initialization and avoid illegal memory access)
+
+    // Lab 5 - Part 7
+    PathFinder pathfinder;
 
     while (!WindowShouldClose())
     {
@@ -87,6 +90,36 @@ int main(void)
             numberOfWalls = tilemap.RegenerateLevel(0.15); // Regenerate level on key press - creating new randomly placed floors and walls based on the randomizer of the walls in RegenerateLevel()
             tilemap.DrawBorders({ BLACK }); // Draw the tilemap borders
         }
+
+    	// Lab 5 - Part 7
+        TileCoordinates mouseTilePos = tilemap.GetTileAtScreenPos(GetMousePosition());
+        if (tilemap.ContainsTile(mouseTilePos))
+        {
+	        if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+	        {
+                pathfinder = PathFinder(&tilemap, player.position, TileCoordinates(mouseTilePos));
+	        }
+
+            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+            {
+                pathfinder = PathFinder(&tilemap, player.position, TileCoordinates(mouseTilePos));
+                pathfinder.SolvePath();
+            }
+        }
+
+        if (pathfinder.map != nullptr)
+        {
+	        if (IsKeyPressed(KEY_SPACE))
+	        {
+                pathfinder.ProcessNextIterationFunctional();
+	        }
+
+            if (drawPathInfo)
+            {
+                pathfinder.DrawCurrentState();
+            }
+        }
+
 
         DrawText("Tilemaps!", 16, 9, 20, RED);
         DrawRectangle(970, 10, 300, 30, { 200, 150, 200, 255 });

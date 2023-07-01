@@ -148,7 +148,7 @@ bool Tilemap::IsTraversable(Vector2 tilePosition)
     return false; // otherwise false
 }
 
-std::vector<Vector2> Tilemap::GetTraversibleTilesAdjacentTo(Vector2 tilePos)
+std::vector<Vector2> Tilemap::GetTraversibleTilesAdjacentTo(TileCoordinates tilePos) // (Changed from Vector2 to TileCoordinates)
 {
     std::vector<Vector2> adjacentTilePositions; // create a vector container to store adjacent tile positions
     // North, South, East, West
@@ -159,13 +159,13 @@ std::vector<Vector2> Tilemap::GetTraversibleTilesAdjacentTo(Vector2 tilePos)
 
     // Check if each adjacent tile is traversible and add it to the vector container if it is using element push_back
     if (IsTraversable(N))
-        adjacentTilePositions.push_back(N); // Add the north tile position to the vector if it is traversable
+        adjacentTilePositions.push_back(Vector2{N.x,N.y}); // Add the north tile position to the vector if it is traversable
     if (IsTraversable(S))
-        adjacentTilePositions.push_back(S); // Add the south tile position to the vector if it is traversable
+        adjacentTilePositions.push_back(Vector2{ S.x,S.y }); // Add the south tile position to the vector if it is traversable
     if (IsTraversable(W))
-        adjacentTilePositions.push_back(W); // Add the west tile position to the vector if it is traversable
+        adjacentTilePositions.push_back(Vector2{ W.x,W.y }); // Add the west tile position to the vector if it is traversable
     if (IsTraversable(E))
-        adjacentTilePositions.push_back(E); // Add the east tile position to the vector if it is traversable
+        adjacentTilePositions.push_back(Vector2{ E.x,E.y }); // Add the east tile position to the vector if it is traversable
 
     return adjacentTilePositions; // return the vector container of adjacent traversable positions
 }
@@ -226,4 +226,22 @@ std::vector<Vector2> Tilemap::GetAllTraversableTiles() // Return a vector contai
         }
     }
     return traversableTiles; // return the vector container list of traversable tiles
+}
+
+// Lab 5 - Part 8
+int Tilemap::GetCostForTile(Vector2 tilePosition)
+{
+    if (IsInsideGrid((int)tilePosition.x, (int)tilePosition.y))
+    {
+        Tile tileType = GetTile((int)tilePosition.x, (int)tilePosition.y);
+        if (tileType == Tile::Floor)
+        {
+            return 1; // cost for moving through floor tile by 1
+        }
+        if (tileType == Tile::Wall)
+        {
+            return HIGH_COST; // cost for moving through wall tile (High Number similar to INFINITY)
+        }
+    }
+    return HIGH_COST; // If tile is not inside the grid, then it is not traversable.
 }
