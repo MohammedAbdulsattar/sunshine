@@ -96,23 +96,26 @@ int main(void)
     	// Lab 5 - Part 7
         mouseTilePos = tilemap.GetTileAtScreenPos(GetMousePosition());
 
+        // Convert player's position from screen space (Vector2 float) to tile space (integer)
+        TileCoordinates playerTilePos = tilemap.GetTileAtScreenPos(player.position);
+
         if (tilemap.ContainsTile(mouseTilePos))
         {
-	        if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+	        if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) // Debug run-through
 	        {
-                pathfinder = PathFinder(&tilemap, player.position, TileCoordinates(mouseTilePos));
+                pathfinder = PathFinder(&tilemap, playerTilePos, TileCoordinates(mouseTilePos));
 	        }
 
-            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) // Solve run-through
             {
-                pathfinder = PathFinder(&tilemap, player.position, TileCoordinates(mouseTilePos));
+                pathfinder = PathFinder(&tilemap, playerTilePos, TileCoordinates(mouseTilePos));
                 pathfinder.SolvePath();
             }
         }
 
         if (pathfinder.map != nullptr)
         {
-	        if (IsKeyPressed(KEY_SPACE))
+	        if (IsKeyPressed(KEY_SPACE)) // Debug run-through iteration (per node step evaluation)
 	        {
                 pathfinder.ProcessNextIterationFunctional();
 	        }

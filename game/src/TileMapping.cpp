@@ -20,9 +20,9 @@ Vector2 Tilemap::GetScreenPosOfTile(TileCoordinates tilePosition)
 
 TileCoordinates Tilemap::GetTileAtScreenPos(Vector2 positionOnScreen)
 {
-    int tileX = static_cast<int>(positionOnScreen.x / tileSizeX);
-    int tileY = static_cast<int>(positionOnScreen.y / tileSizeY);
-    return TileCoordinates{ tileX, tileY };
+    int tileX = static_cast<int>(positionOnScreen.x / tileSizeX); // Convert a X position from a Vector2 float to an int tile space
+    int tileY = static_cast<int>(positionOnScreen.y / tileSizeY); // Convert a Y position from a Vector2 float to an int tile space
+    return TileCoordinates{ tileX, tileY }; // return the conversion as an int TileCoordinate space (Tile)
     //return { floorf(positionOnScreen.x / tileSizeX), floorf(positionOnScreen.y / tileSizeY) }; // another way of checking for position on the screen over a tile
 }
 
