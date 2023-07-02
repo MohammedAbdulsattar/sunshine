@@ -78,8 +78,8 @@ bool PathFinder::IsCompleted() // check if the pathfinding algorithm is finished
 // Lab 5 - Part 7
 void PathFinder::MoveToVisitedSet(TileCoordinates node)
 {
-	visited[currentNode] = unvisited[currentNode]; // set the "unvisited" "currentNode" as a "visisted" node adding it to the vector
-	unvisited.erase(currentNode); // erase the "currentNode" from the "unvisited" vector
+	visited[node] = unvisited[node]; // set the "unvisited" "currentNode" as a "visisted" node adding it to the vector
+	unvisited.erase(node); // erase the "currentNode" from the "unvisited" vector
 }
 
 void PathFinder::ProcessNextIterationFunctional()
@@ -106,8 +106,6 @@ void PathFinder::ProcessNextIterationFunctional()
 			SetCostToReach(adjacent, costThisWay);
 			cheapestEdgeTo[adjacent] = currentNode;
 		}
-
-		MoveToVisitedSet(currentNode); // Done exploring this. Remove current node from "Unvisited", place it in "Visited"
 	}
 
 	MoveToVisitedSet(currentNode); // Done exploring this. Remove current node from "Unvisited", place it in "Visited"
@@ -129,10 +127,79 @@ bool PathFinder::SolvePath()
 // Lab 5 - Part 8
 float PathFinder::GetTotalCostToReach(TileCoordinates pos)
 {
-	return unvisited[pos];
+	//return unvisited[pos];
+	if (unvisited.find(pos) != unvisited.end())
+	{
+		return unvisited[pos];
+	}
+	return INFINITY;
 }
 
 void PathFinder::SetCostToReach(TileCoordinates pos, float newCost)
 {
 	unvisited[pos] = newCost;
+}
+
+void PathFinder::DrawCurrentState()
+{
+	// Assuming your Tilemap class can give you its dimensions
+	int mapWidth = map->GetGridWidth();
+	int mapHeight = map->GetGridHeight();
+
+	// Iterate through each tile in the map
+	for (int y = 0; y < mapHeight; y++) 
+	{
+		for (int x = 0; x < mapWidth; x++) 
+		{
+			TileCoordinates tilePos{ x, y };
+
+			// Calculate screen position for this tile (assuming you have tileSize)
+			int tileSize = 32; // Or whatever size your tiles are
+			Vector2 screenPos = { static_cast<float>(x * tileSize), static_cast<float>(y * tileSize) };
+
+			// Decide on the color based on the state of the tile
+			Color tileColor = GRAY; // Default color for unvisited
+			if (IsVisited(tilePos)) 
+			{
+				tileColor = DARKGRAY; // Visited tiles
+			}
+			if (tilePos == currentNode) 
+			{
+				tileColor = YELLOW; // Current tile being processed
+			}
+			if (tilePos == startNode) 
+			{
+				tileColor = GREEN; // Start tile
+			}
+			if (tilePos == endNode) 
+			{
+				tileColor = RED; // End tile
+			}
+
+			// Draw the tile
+			DrawRectangle(screenPos.x, screenPos.y, tileSize, tileSize, tileColor);
+
+			// Optionally, draw cost to reach this tile if it's been calculated
+			if (unvisited.count(tilePos) > 0 || visited.count(tilePos) > 0) 
+			{
+				float cost = GetTotalCostToReach(tilePos);
+				DrawText(TextFormat("%.1f", cost), screenPos.x, screenPos.y, 10, BLACK);
+			}
+		}
+	}
+
+	// Optionally, if a path from start to end has been found, draw the path
+	if (IsSolved()) 
+	{
+		TileCoordinates tilePos = endNode;
+		while (tilePos != startNode) 
+		{
+			TileCoordinates prevTilePos = cheapestEdgeTo[tilePos];
+
+			// Draw line or arrow between tilePos and prevTilePos here
+			// ...
+
+			tilePos = prevTilePos;
+		}
+	}
 }

@@ -126,7 +126,7 @@ int Tilemap::RegenerateLevel(float chanceOfWall)
     {
         for (int y = 0; y < GetGridHeight(); y++) // across height (y positions)
         {
-            if (GetRandomValue(0.0, 100) < chanceOfWall * 100)
+            if (GetRandomValue(0, 100) < chanceOfWall * 100)
             {
                 SetTile(x, y, Tile::Wall); // set the current XY tile as a wall
                 wallCount++; // increment the count of walls to keep track of how many obstacles are being placed
@@ -148,14 +148,14 @@ bool Tilemap::IsTraversable(Vector2 tilePosition)
     return false; // otherwise false
 }
 
-std::vector<Vector2> Tilemap::GetTraversibleTilesAdjacentTo(TileCoordinates tilePos) // (Changed from Vector2 to TileCoordinates)
+std::vector<Vector2> Tilemap::GetTraversibleTilesAdjacentTo(TileCoordinates tilePos) // (Changed from Vector2 to TileCoordinates - Possibly Bug Prone)
 {
     std::vector<Vector2> adjacentTilePositions; // create a vector container to store adjacent tile positions
     // North, South, East, West
-    Vector2 N = { tilePos.x + NORTH.x, tilePos.y + NORTH.y }; // calculate the position of the tile to the north
-    Vector2 S = { tilePos.x + SOUTH.x, tilePos.y + SOUTH.y }; // calculate the position of the tile to the south
-    Vector2 E = { tilePos.x + EAST.x, tilePos.y + EAST.y }; // calculate the position of the tile to the east
-    Vector2 W = { tilePos.x + WEST.x, tilePos.y + WEST.y }; // calculate the position of the tile to the west
+    Vector2 N = { static_cast<float>(tilePos.x) + NORTH.x, static_cast<float>(tilePos.y) + NORTH.y }; // calculate the position of the tile to the north
+    Vector2 S = { static_cast<float>(tilePos.x) + SOUTH.x, static_cast<float>(tilePos.y) + SOUTH.y }; // calculate the position of the tile to the south
+    Vector2 E = { static_cast<float>(tilePos.x) + EAST.x, static_cast<float>(tilePos.y) + EAST.y }; // calculate the position of the tile to the east
+    Vector2 W = { static_cast<float>(tilePos.x) + WEST.x, static_cast<float>(tilePos.y) + WEST.y }; // calculate the position of the tile to the west
 
     // Check if each adjacent tile is traversible and add it to the vector container if it is using element push_back
     if (IsTraversable(N))
@@ -244,4 +244,10 @@ int Tilemap::GetCostForTile(Vector2 tilePosition)
         }
     }
     return HIGH_COST; // If tile is not inside the grid, then it is not traversable.
+}
+
+bool Tilemap::ContainsTile(TileCoordinates tilePos)
+{
+    // Implement logic to check if tilePos is inside the bounds of the tilemap
+    return (tilePos.x >= 0 && tilePos.x < width && tilePos.y >= 0 && tilePos.y < height);
 }

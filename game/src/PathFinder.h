@@ -46,6 +46,7 @@ public:
 	// Lab 5 - Part 8
 	float GetTotalCostToReach(TileCoordinates pos);
 	void SetCostToReach(TileCoordinates pos, float newCost);
+	void DrawCurrentState(); // Draw the current state
 
 private:
 	// Maps with TileCoordinates as Keys and Costs as Values. So each unique adjacent stores a value in the map, the cost of the tile {0,2} in the unvisited set is unvisited [{0,2}]

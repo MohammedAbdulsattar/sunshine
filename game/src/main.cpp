@@ -34,6 +34,8 @@ int main(void)
 
     // Lab 5 - Part 7
     PathFinder pathfinder;
+    TileCoordinates mouseTilePos;
+	bool drawPathInfo = true; // or false, depending on default behavior you want
 
     while (!WindowShouldClose())
     {
@@ -92,7 +94,8 @@ int main(void)
         }
 
     	// Lab 5 - Part 7
-        TileCoordinates mouseTilePos = tilemap.GetTileAtScreenPos(GetMousePosition());
+        mouseTilePos = tilemap.GetTileAtScreenPos(GetMousePosition());
+
         if (tilemap.ContainsTile(mouseTilePos))
         {
 	        if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
@@ -119,7 +122,6 @@ int main(void)
                 pathfinder.DrawCurrentState();
             }
         }
-
 
         DrawText("Tilemaps!", 16, 9, 20, RED);
         DrawRectangle(970, 10, 300, 30, { 200, 150, 200, 255 });

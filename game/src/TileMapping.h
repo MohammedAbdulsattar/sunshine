@@ -83,6 +83,7 @@ public:
 
     // Lab 5 - Part 8
     int GetCostForTile(Vector2 tilePosition);
+    bool ContainsTile(TileCoordinates tilePos); // Check to see if a tile is contained in the tilemap
 
 private:
     Tile tiles[MAP_WIDTH][MAP_HEIGHT]; // create tiles based on the map width and height
