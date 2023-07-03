@@ -143,47 +143,49 @@ void PathFinder::SetCostToReach(TileCoordinates pos, float newCost)
 void PathFinder::DrawCurrentState()
 {
 	// Assuming your Tilemap class can give you its dimensions
-	int mapWidth = map->GetGridWidth();
-	int mapHeight = map->GetGridHeight();
+	int mapWidth = map->GetGridWidth(); // get the current map width dimension
+	int mapHeight = map->GetGridHeight(); // get the current map height dimension
+
+	int tileSizeX = map->GetTileWidth(); // get current X tile size for grid to ensure draw accuracy
+	int tileSizeY = map->GetTileHeight(); // get current Y tile size for grid to ensure draw accuracy
 
 	// Iterate through each tile in the map
-	for (int y = 0; y < mapHeight; y++) 
+	for (int y = 0; y < mapHeight; y++) // down each row space
 	{
-		for (int x = 0; x < mapWidth; x++) 
+		for (int x = 0; x < mapWidth; x++) // across each column space
 		{
-			TileCoordinates tilePos{ x, y };
+			TileCoordinates tilePos{ x, y }; // set a tile at each tilespace
 
-			// Calculate screen position for this tile (assuming you have tileSize)
-			int tileSize = 32; // Or whatever size your tiles are
-			Vector2 screenPos = { static_cast<float>(x * tileSize), static_cast<float>(y * tileSize) };
+			// Calculate screen position for this tile (for the current grid XY tile size)
+			Vector2 screenPos = { static_cast<float>(x * tileSizeX), static_cast<float>(y * tileSizeY) };
 
 			// Decide on the color based on the state of the tile
 			Color tileColor = GRAY; // Default color for unvisited
 			if (IsVisited(tilePos)) 
 			{
-				tileColor = DARKGRAY; // Visited tiles
+				tileColor = { 80,80,80,128 }; // Visited tiles (dark gray)
 			}
 			if (tilePos == currentNode) 
 			{
-				tileColor = YELLOW; // Current tile being processed
+				tileColor = { 255,255,0,128 }; // Current tile being processed (yellow)
 			}
 			if (tilePos == startNode) 
 			{
-				tileColor = GREEN; // Start tile
+				tileColor = { 0,255,0,128 }; // Start tile (green)
 			}
 			if (tilePos == endNode) 
 			{
-				tileColor = RED; // End tile
+				tileColor = { 255,0,0,128 }; // End tile (red)
 			}
 
 			// Draw the tile
-			DrawRectangle(screenPos.x, screenPos.y, tileSize, tileSize, tileColor);
+			DrawRectangle(screenPos.x, screenPos.y, tileSizeX, tileSizeY, tileColor);
 
 			// Optionally, draw cost to reach this tile if it's been calculated
 			if (unvisited.count(tilePos) > 0 || visited.count(tilePos) > 0) 
 			{
 				float cost = GetTotalCostToReach(tilePos);
-				DrawText(TextFormat("%.1f", cost), screenPos.x, screenPos.y, 10, BLACK);
+				DrawText(TextFormat("%.1f", cost), screenPos.x, screenPos.y, 10, { 0,0,0,128 });
 			}
 		}
 	}

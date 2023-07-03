@@ -35,7 +35,7 @@ int main(void)
     // Lab 5 - Part 7
     PathFinder pathfinder;
     TileCoordinates mouseTilePos;
-	bool drawPathInfo = true; // or false, depending on default behavior you want
+	bool drawPathInfo = false; // set the DrawInfo to false and switch between on or off with a button trigger flag
 
     while (!WindowShouldClose())
     {
@@ -113,6 +113,11 @@ int main(void)
             }
         }
 
+        if (IsKeyPressed(KEY_T)) // Check if the 'T' key was pressed
+        {
+            drawPathInfo = !drawPathInfo; // Toggle the value of drawPathInfo
+        }
+
         if (pathfinder.map != nullptr)
         {
 	        if (IsKeyPressed(KEY_SPACE)) // Debug run-through iteration (per node step evaluation)
@@ -120,7 +125,7 @@ int main(void)
                 pathfinder.ProcessNextIterationFunctional();
 	        }
 
-            if (drawPathInfo)
+        	if (drawPathInfo) // check if drawPathInfo flag is triggered
             {
                 pathfinder.DrawCurrentState();
             }
@@ -141,6 +146,14 @@ int main(void)
 
             ImGui::SliderInt("Adjust Tilemap Size X", &tilemap.tileSizeX, 1, 200, "%.0f"); // Slider for the tilemap sizeX
             ImGui::SliderInt("Adjust Tilemap Size Y", &tilemap.tileSizeY, 1, 200, "%.0f"); // Slider for the tilemap sizeY
+
+            ImGui::Text("Instructions for the Tilemap Functionality:");
+            ImGui::Text("1. Use the above sliders to adjust the tilemap size in the window.");
+            ImGui::Text("2. Press 'T' to toggle pathfinding info.");
+            ImGui::Text("3. Press 'R' to regenerate the level.");
+            ImGui::Text("4. Click 'Left Mouse button' to immediately solve a tile.");
+            ImGui::Text("5. Click 'Right Mouse button' to set a goal tile for demo solving.");
+            ImGui::Text("6. Press 'SpaceBar' after 'Right Mouse' to solve the goal per tile.");
 
             rlImGuiEnd(); // End GUI
         }

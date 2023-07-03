@@ -18,7 +18,7 @@ Vector2 Tilemap::GetScreenPosOfTile(TileCoordinates tilePosition)
     return Vector2{ (float)tilePosition.x * tileSizeX, (float)tilePosition.y * tileSizeY };
 }
 
-TileCoordinates Tilemap::GetTileAtScreenPos(Vector2 positionOnScreen)
+TileCoordinates Tilemap::GetTileAtScreenPos(Vector2 positionOnScreen)  // Convert a float Vector2 position to an integer TileCoordinate space
 {
     int tileX = static_cast<int>(positionOnScreen.x / tileSizeX); // Convert a X position from a Vector2 float to an int tile space
     int tileY = static_cast<int>(positionOnScreen.y / tileSizeY); // Convert a Y position from a Vector2 float to an int tile space
@@ -250,4 +250,14 @@ bool Tilemap::ContainsTile(TileCoordinates tilePos)
 {
     // Implement logic to check if tilePos is inside the bounds of the tilemap
     return (tilePos.x >= 0 && tilePos.x < width && tilePos.y >= 0 && tilePos.y < height);
+}
+
+int Tilemap::GetTileWidth() const // get the current tileWidth
+{
+	return tileSizeX; // return the tileSizeX (width) at function call
+}
+
+int Tilemap::GetTileHeight() const // get the current tileHeight
+{
+    return tileSizeY; // return the tileSizeY (height) at function call
 }
