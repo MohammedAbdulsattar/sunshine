@@ -252,6 +252,7 @@ bool Tilemap::ContainsTile(TileCoordinates tilePos)
     return (tilePos.x >= 0 && tilePos.x < width && tilePos.y >= 0 && tilePos.y < height);
 }
 
+// Lab 5 - Homework Part 1
 int Tilemap::GetTileWidth() const // get the current tileWidth
 {
 	return tileSizeX; // return the tileSizeX (width) at function call

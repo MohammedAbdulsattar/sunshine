@@ -140,6 +140,7 @@ void PathFinder::SetCostToReach(TileCoordinates pos, float newCost)
 	unvisited[pos] = newCost;
 }
 
+// Lab 5 - Homework Part 1
 void PathFinder::DrawCurrentState()
 {
 	// Assuming your Tilemap class can give you its dimensions
@@ -190,18 +191,42 @@ void PathFinder::DrawCurrentState()
 		}
 	}
 
-	// Optionally, if a path from start to end has been found, draw the path
-	if (IsSolved()) 
+	// Lab 5 - Homework Part 2
+	if (IsSolved()) // If a valid path from startNode to endNode has been found, draw the path
 	{
-		TileCoordinates tilePos = endNode;
-		while (tilePos != startNode) 
+		TileCoordinates tilePos = endNode; // set the tilePos to the current endNode
+		while (tilePos != startNode) // while the tilePos is not the same spot as the startNode (keep going)
 		{
-			TileCoordinates prevTilePos = cheapestEdgeTo[tilePos];
+			TileCoordinates prevTilePos = cheapestEdgeTo[tilePos]; // beginning and going backwards from endNode to startNode
+			
+			// Create vector lines for tileScreenPos and prevTileScreenPos
+			// (starting at current endNode and moving backwards from endNode towards startNode)
+			// Current Tile (going backwards)
+			Vector2 tileScreenPos = { static_cast<float>(tilePos.x * tileSizeX), static_cast<float>(tilePos.y * tileSizeY) }; 
+			// Nearest tile to Current Tile (going backwards)
+			Vector2 prevTileScreenPos = { static_cast<float>(prevTilePos.x * tileSizeX), static_cast<float>(prevTilePos.y * tileSizeY) };
 
-			// Draw line or arrow between tilePos and prevTilePos here
-			// ...
+			// Create a vector start and end positions to draw the solution line
+			// from the Current Node
+			Vector2 startPos = { tileScreenPos.x + tileSizeX / 2, tileScreenPos.y + tileSizeY / 2 }; 
+			// to the nearest previous tile (going backwards)
+			Vector2 endPos = { prevTileScreenPos.x + tileSizeX / 2, prevTileScreenPos.y + tileSizeY / 2 }; 
+			float solvedThickness = 3.0f; // thickness value for solution line
+			Color lineColor = PURPLE; // color value for solution line
 
-			tilePos = prevTilePos;
+			// Draw the line from Current Node to the Previous node (going backwards) 
+			DrawLineEx(startPos, endPos, solvedThickness, lineColor);
+
+			tilePos = prevTilePos; // set the tilePos to the previous one and moving backwards by a single tile step each time
 		}
+		// Convert the endNode position from tile coordinates to screen coordinates
+		Vector2 endNodeScreenPos = { static_cast<float>(endNode.x * tileSizeX), static_cast<float>(endNode.y * tileSizeY) };
+
+		float textOffset = tileSizeY / 2; // Tile offset for correctly adding text & avoiding overlap with other text output on Tiles
+
+		// Draw the "SOLVED" text at the endNode's position (halfway down the tile)
+		DrawText("SOLVED", endNodeScreenPos.x, endNodeScreenPos.y + textOffset, 10, {0, 0, 255, 255});
+		// Draw the "GOAL" text at the endNode's position (near the bottom of tile)
+		DrawText("GOAL", endNodeScreenPos.x, endNodeScreenPos.y + (textOffset * 1.75), 10, { 0, 255, 255, 255 });
 	}
 }

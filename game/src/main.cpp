@@ -33,8 +33,9 @@ int main(void)
     int numberOfWalls = tilemap.RegenerateLevel(0.15); // Initial population of floors and walls (needs to be done beforehand to ensure proper memory initialization and avoid illegal memory access)
 
     // Lab 5 - Part 7
-    PathFinder pathfinder;
-    TileCoordinates mouseTilePos;
+    PathFinder pathfinder; // PathFinder class object - runs through tilemap and finds the goal endNode from the character startNode
+    TileCoordinates mouseTilePos; // TileCoordinate mouseTilePos object - allows picking of a tile on grid base on XY mouse position
+    // Lab 5 - Homework Part 1
 	bool drawPathInfo = false; // set the DrawInfo to false and switch between on or off with a button trigger flag
 
     while (!WindowShouldClose())
@@ -113,6 +114,7 @@ int main(void)
             }
         }
 
+        // Lab 5 - Homework Part 1
         if (IsKeyPressed(KEY_T)) // Check if the 'T' key was pressed
         {
             drawPathInfo = !drawPathInfo; // Toggle the value of drawPathInfo
@@ -131,7 +133,7 @@ int main(void)
             }
         }
 
-        DrawText("Tilemaps!", 16, 9, 20, RED);
+        DrawText("Tilemaps!", 16, 9, 20, { 255,255,255,255});
         DrawRectangle(970, 10, 300, 30, { 200, 150, 200, 255 });
         DrawText("Press ~ to open/close GUI", 980, 15, 20, WHITE); // GUI Instructions
 

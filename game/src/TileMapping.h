@@ -84,6 +84,8 @@ public:
     // Lab 5 - Part 8
     int GetCostForTile(Vector2 tilePosition);
     bool ContainsTile(TileCoordinates tilePos); // Check to see if a tile is contained in the tilemap
+
+    // Lab 5 - Homework Part 1
     int GetTileWidth() const;
     int GetTileHeight() const;
 
