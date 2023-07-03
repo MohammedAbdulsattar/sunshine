@@ -219,11 +219,16 @@ void PathFinder::DrawCurrentState()
 
 			tilePos = prevTilePos; // set the tilePos to the previous one and moving backwards by a single tile step each time
 		}
+		// Convert the startNode position from tile coordinates to screen coordinates
+		Vector2 startNodeScreenPos = { static_cast<float>(startNode.x * tileSizeX), static_cast<float>(startNode.y * tileSizeY) };
+
 		// Convert the endNode position from tile coordinates to screen coordinates
 		Vector2 endNodeScreenPos = { static_cast<float>(endNode.x * tileSizeX), static_cast<float>(endNode.y * tileSizeY) };
 
 		float textOffset = tileSizeY / 2; // Tile offset for correctly adding text & avoiding overlap with other text output on Tiles
 
+		// Draw the "START" text at the startNode's position (just over halfway down the tile)
+		DrawText("START", startNodeScreenPos.x, startNodeScreenPos.y + (textOffset * 1.5), 10, { 255, 255, 0, 255 });
 		// Draw the "SOLVED" text at the endNode's position (halfway down the tile)
 		DrawText("SOLVED", endNodeScreenPos.x, endNodeScreenPos.y + textOffset, 10, {0, 0, 255, 255});
 		// Draw the "GOAL" text at the endNode's position (near the bottom of tile)
