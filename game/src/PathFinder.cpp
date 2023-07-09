@@ -176,7 +176,7 @@ void PathFinder::DrawCurrentState(Color color)
 			}
 			if (tilePos == endNode) 
 			{
-				tileColor = { 255,0,0,128 }; // End tile (red)
+				tileColor = color; // End tile (red)
 			}
 
 			// Draw the tile
