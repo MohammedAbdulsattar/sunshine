@@ -30,7 +30,10 @@ struct TileCoordinates
     // Lab 5 - Part 3
     void operator +=(const TileCoordinates& r); // new operator function for +=
     void operator -=(const TileCoordinates& r); // new operator function for -=
-};
+    // Assignment 2 - Part 6
+    static TileCoordinates ScreenToTileCoordinates(Vector2 position, Vector2 tileSize); // take a vector position with a vector tileSize
+    static Vector2 TileToScreenCoordinates(const TileCoordinates& tileCoord, const Vector2& tileSize);
+};  
 
 bool operator!=(const TileCoordinates& l, const TileCoordinates& r);
 bool operator==(const TileCoordinates& l, const TileCoordinates& r);

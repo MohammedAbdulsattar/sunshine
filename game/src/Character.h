@@ -16,7 +16,7 @@ public:
 
     Character(const char* texturePath, Vector2 startPos);
 
-    void Draw();
+    virtual void Draw(); // changed to virtual function so "Draw()" in Monster.h is allowed to override 
 };
 
 #endif // CHARACTER_H
