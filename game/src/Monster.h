@@ -24,9 +24,9 @@ public:
 	void SetPath(const std::vector<TileCoordinates>& path);
 
 	void SetTileSize(Vector2 tileSize); // Set the tileSize for the monster
-
+	// Assignment 2 - Part 5
 	void MonsterPath(); // monster PathFinding
-
+	// Assignment 2 - Part 5
 	void MonsterUpdate(float deltaTime); // updating the monsters movement
 
 private:
@@ -36,7 +36,7 @@ private:
 	float monsterSpeed; // speed at which the monster moves
 
 	PathFinder monsterPathFinder; // PathFinding algorithm instance for the monster
-	Tilemap tilemap;
+	Tilemap tilemap; // tilemap for the monster to use in PathFinding
 
 
 };

@@ -167,7 +167,7 @@ void PathFinder::SetCostToReach(TileCoordinates pos, float newCost)
 }
 
 // Lab 5 - Homework Part 1
-void PathFinder::DrawCurrentState(Color color)
+void PathFinder::DrawCurrentState(Color color) // Color illustrates which path is currently being solved
 {
 	// Assuming your Tilemap class can give you its dimensions
 	int mapWidth = map->GetGridWidth(); // get the current map width dimension

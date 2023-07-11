@@ -22,7 +22,7 @@ void Monster::SetGoal(TileCoordinates goal) // Set the monster goal tile and cal
 	MonsterPath(); // call MonsterPath function
 }
 
-void Monster::SetPath(const std::vector<TileCoordinates>& path)
+void Monster::SetPath(const std::vector<TileCoordinates>& path) // set the path container of vector TileCoordinates
 {
     monsterPath = path;
 }
@@ -40,7 +40,7 @@ void Monster::MonsterPath() // Set minotaurStart at the current position for it 
     monsterPathFinder.SolvePath();
 }
 // Assignment 2 - Part 5
-void Monster::MonsterUpdate(float deltaTime)
+void Monster::MonsterUpdate(float deltaTime) // Update MonsterPath
 {
     // check monsterPath tiles
     if (!monsterPath.empty())

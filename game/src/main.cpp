@@ -59,7 +59,7 @@ int main(void)
         player.Draw(); // Draw the player character
         minotaur.Draw(); // Draw the Monster minotaur
 
-        minotaur.MonsterUpdate(deltaTime);
+        minotaur.MonsterUpdate(deltaTime); // Update the Minotaur PathFinding movement
 
         float moveAmount = 1.0f;
 
@@ -118,7 +118,7 @@ int main(void)
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) // Player Solve run-through
             {
                 player_pathfinder = PathFinder(&tilemap, playerTilePos, TileCoordinates(mouseTilePos));
-                player_pathfinder.SolvePath(); // comment to allow step solving by tile for the player_pathfinder
+				player_pathfinder.SolvePath(); // comment to allow step solving by tile for the player_pathfinder
             }
 
             if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) // Minotaur Solve run-through

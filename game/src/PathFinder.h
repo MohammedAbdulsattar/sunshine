@@ -42,7 +42,7 @@ public:
 	void MoveToVisitedSet(TileCoordinates node);
 	void ProcessNextIterationFunctional();
 	bool SolvePath();
-
+	// Assignment 2 - Part 5
 	std::vector<TileCoordinates> GetPath() const;
 
 	// Lab 5 - Part 8
