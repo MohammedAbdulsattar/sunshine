@@ -124,6 +124,32 @@ bool PathFinder::SolvePath()
 	return IsSolved(); // return the "endNode" if algorithm succeeds and reaches the end position
 }
 
+// Assignment 2 - Part 5 (Buggy)
+std::vector<TileCoordinates> PathFinder::GetPath() const
+{
+	std::vector<TileCoordinates> path; // vector of TileCoordinates
+
+	if (!IsSolved())
+		return path; // If the path wasn't solved, return the empty path
+
+	TileCoordinates node = endNode;
+
+	// Go backwards from the end node to the start node
+	while (node != startNode) 
+	{
+		path.push_back(node);
+		node = cheapestEdgeTo.at(node);
+	}
+
+	// Add the start node to end of path
+	path.push_back(startNode);
+
+	// Reverse path from begin to end of path
+	std::reverse(path.begin(), path.end());
+
+	return path; // return path
+}
+
 // Lab 5 - Part 8
 float PathFinder::GetTotalCostToReach(TileCoordinates pos)
 {

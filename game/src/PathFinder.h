@@ -43,6 +43,8 @@ public:
 	void ProcessNextIterationFunctional();
 	bool SolvePath();
 
+	std::vector<TileCoordinates> GetPath() const;
+
 	// Lab 5 - Part 8
 	float GetTotalCostToReach(TileCoordinates pos);
 	void SetCostToReach(TileCoordinates pos, float newCost);

@@ -15,11 +15,13 @@
 class Monster : public Character
 {
 public:
-	Monster(const char* texturePath, Vector2 startPos); // monster filepath constructor
+	Monster(const char* texturePath, Vector2 startPos, float speed, Tilemap& map); // monster filepath constructor
 
 	void Draw() override; // Override base Character draw function for Monster
 
 	void SetGoal(TileCoordinates goal); // set the tile goal for the monster (as a TileCoordinate)
+
+	void SetPath(const std::vector<TileCoordinates>& path);
 
 	void SetTileSize(Vector2 tileSize); // Set the tileSize for the monster
 
@@ -34,6 +36,7 @@ private:
 	float monsterSpeed; // speed at which the monster moves
 
 	PathFinder monsterPathFinder; // PathFinding algorithm instance for the monster
+	Tilemap tilemap;
 
 
 };

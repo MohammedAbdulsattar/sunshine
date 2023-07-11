@@ -34,7 +34,7 @@ int main(void)
     Character player("../game/assets/textures/Player.png", Vector2{ 0, 0 }); // Load the player texture from file and give it a starting XY position vector
     // Assignment 2 - Part 6
     // Minotaur Texture obtained from https://clipart-library.com/minotaur-cliparts.html & https://clipart-library.com/clipart/minotaur-cliparts_13.htm
-    Monster minotaur("../game/assets/textures/Monster.png", Vector2{1200,630 }); // Load the monster texture from file and give it a starting XY position vector
+    Monster minotaur("../game/assets/textures/Monster.png", Vector2{1200,630 }, 50.0f, tilemap); // Load the monster texture from file and give it a starting XY position vector
 
     int numberOfWalls = tilemap.RegenerateLevel(0.15); // Initial population of floors and walls (needs to be done beforehand to ensure proper memory initialization and avoid illegal memory access)
 
@@ -58,6 +58,8 @@ int main(void)
         tilemap.DrawBorders({ BLACK }); // Draw the tilemap borders
         player.Draw(); // Draw the player character
         minotaur.Draw(); // Draw the Monster minotaur
+
+        minotaur.MonsterUpdate(deltaTime);
 
         float moveAmount = 1.0f;
 
@@ -113,16 +115,19 @@ int main(void)
 
         if (tilemap.ContainsTile(mouseTilePos))
         {
-            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) // Solve run-through
+            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) // Player Solve run-through
             {
                 player_pathfinder = PathFinder(&tilemap, playerTilePos, TileCoordinates(mouseTilePos));
                 player_pathfinder.SolvePath(); // comment to allow step solving by tile for the player_pathfinder
             }
 
-            if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) // Debug run-through
+            if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) // Minotaur Solve run-through
             {
                 minotaur_pathfinder = PathFinder(&tilemap, minotaurTilePos, TileCoordinates(mouseTilePos));
                 minotaur_pathfinder.SolvePath(); // comment to allow step solving by tile for the minotaur_pathfinder
+                minotaur.SetPath(minotaur_pathfinder.GetPath()); // SetPath for minotaur from GetPath
+                //minotaur.SetGoal(minotaur_pathfinder.GetPath());
+                //minotaur.MonsterUpdate(deltaTime);
             }
         }
 
