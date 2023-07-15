@@ -45,11 +45,13 @@ void Monster::MonsterUpdate(float deltaTime) // Update MonsterPath
     // check monsterPath tiles
     if (!monsterPath.empty())
     {
-        // Create vector to go through each tile on the monster path
-        Vector2 goalPos = TileCoordinates::TileToScreenCoordinates(monsterPath.front(), monsterTileSize);
+        auto front = monsterPath.front();
+        auto end = monsterPath.end();
+    	// Create vector to go through each tile on the monster path
+        Vector2 goalPos = TileCoordinates::TileToScreenCoordinates(front, monsterTileSize);
         // direction = goalPos - position (result = { v1.x - v2.x, v1.y - v2.y };)
         Vector2 direction = Vector2Subtract(goalPos, position);
-
+        
         // normalized direction vector
         direction = Vector2Normalize(direction);
 

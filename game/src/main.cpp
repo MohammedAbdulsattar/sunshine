@@ -125,6 +125,7 @@ int main(void)
             {
                 minotaur_pathfinder = PathFinder(&tilemap, minotaurTilePos, TileCoordinates(mouseTilePos));
                 minotaur_pathfinder.SolvePath(); // comment to allow step solving by tile for the minotaur_pathfinder
+                minotaur.SetTileSize(Vector2{80.0f,90.0f});
                 minotaur.SetPath(minotaur_pathfinder.GetPath()); // SetPath for minotaur from GetPath
                 //minotaur.SetGoal(minotaur_pathfinder.GetPath());
                 //minotaur.MonsterUpdate(deltaTime);
